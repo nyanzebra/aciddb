@@ -1,0 +1,5 @@
+lib server-lib : [ glob src/*.cpp : src/main.cpp ] ../shared//shared : <link>static ;
+
+exe server : server-lib src/main.cpp ../shared//shared ;
+
+install . : server ;

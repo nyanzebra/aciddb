@@ -1,0 +1,3 @@
+exe unittests : [ glob *.cpp ] ..//server-lib ../../testing//testing ;
+
+unit-test server-unittests : unittests ;

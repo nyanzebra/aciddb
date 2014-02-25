@@ -1,0 +1,1 @@
+void cpp_connector_dummy() {}

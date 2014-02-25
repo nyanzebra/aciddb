@@ -1,0 +1,7 @@
+lib testing : testing.cpp :
+	<link>static
+	<toolset>darwin:<cxxflags>"-std=c++11 -fcolor-diagnostics"
+	<toolset>gcc:<cxxflags>"-std=c++11"
+: :
+	<include>.
+;

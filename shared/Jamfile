@@ -1,0 +1,8 @@
+lib shared : [ glob src/*.cpp ] :
+	<link>static
+	<toolset>darwin:<cxxflags>"-std=c++11 -fcolor-diagnostics"
+	<toolset>gcc:<cxxflags>"-std=c++11"
+: :
+	<toolset>darwin:<cxxflags>"-std=c++11 -fcolor-diagnostics"
+	<toolset>gcc:<cxxflags>"-std=c++11"
+;

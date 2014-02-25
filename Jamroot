@@ -1,0 +1,7 @@
+build-project cpp-connector ;
+build-project cpp-connector//unittests ;
+build-project server ;
+build-project server//unittests ;
+build-project shared//unittests ;
+
+using testing ;
