@@ -1,0 +1,86 @@
+Journal
+=======
+
+@startuml
+Title: Journal: Create Transitory
+
+Caller -> Journal: get Transitory Journal
+Journal -> Journal: pause Client transactions
+Journal -> Disk: move Journal to Transitory Journal
+Disk -> Journal: ok
+Journal -> Disk: create new Journal with increased version number
+Disk -> Journal: ok
+Journal -> Journal: resume Client transactions
+Journal -> Caller: return Transitory Journal
+@enduml
+
+@startuml
+Title: Journal: Apply To Datastore
+
+participant Disk
+
+Journal -> Disk: get Journal
+Disk -> Journal: Journal
+loop for each Journal Entry in Journal
+	Journal -> Datastore: compare Record from Journal Entry to TOC
+	alt if Record is not deleted and Journal Entry Id is not older than set Journal Entry
+		Datastore -> Journal: Record needs to be processed
+		Journal -> Datastore: Process Journal Entry Event with Datastore
+	else Record is deleted or Journal Entry Id is older than set Journal Entry
+		Datastore -> Journal: Record does not need to be processed
+		Journal -> Journal: ignore Record
+	end
+end
+@enduml
+
+@startuml
+Title: Journal: Apply Transitory
+
+Journal -> Disk: create TOC from on-disk Datastore
+note left
+	see Datastore: Create TOC
+end note
+Disk -> Journal: ok
+Journal -> Journal: preprocess Transitory Journal
+note left
+	see Journal: Preprocess
+end note
+Journal -> Journal: create new Datastore with source as on-disk Datastore
+note left
+	see Datastore: Initialize 
+end note
+Journal -> Datastore: apply Transitory Journal to new Datastore
+note left
+	see Journal: Apply To Datastore
+end note
+Datastore -> Disk: merge Datastores
+note left
+	see Datastores: Merge
+end note
+Disk -> Datastore: ok
+Datastore -> Journal: ok
+Journal -> Disk: rotate new Datastore with old Datastore
+note left
+	see Datastores: Rotate
+end note
+Disk -> Journal: ok
+Journal -> Disk: delete old Datastore
+Disk -> Journal: ok
+@enduml
+
+@startuml
+Title: Journal: Preprocess
+
+Journal -> Disk: read Journal
+Disk -> Journal: ok
+loop for each Journal Entry in Journal
+	alt Journal Entry deletes Record
+		Journal -> Datastore: mark Record as deleted in TOC
+		Datastore -> Journal: ok
+	end
+	alt Journal Entry sets Record
+		Journal -> Datastore: mark Record as set with Journal Entry's Id in TOC
+		Datastore -> Journal: ok
+	end
+end
+@enduml

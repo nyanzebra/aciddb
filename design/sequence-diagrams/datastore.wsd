@@ -1,0 +1,143 @@
+Datastore
+=========
+
+@startuml
+Title: Datastore: Initialize
+
+Datastore -> Datastore: create TOC
+note left
+	see Datastore: Create TOC
+end note
+loop for each Record in Datastore
+	Datastore -> Disk: get Record
+	note left
+		see Datastore: Get Record
+	end note
+	Disk -> Datastore: return Record
+	Datastore -> Datastore: add Record to TOC
+	Datastore -> Datastore: cache Record if required and able
+end
+@enduml
+
+@startuml
+Title: Datastore: Create TOC
+
+Caller -> Database: get TOC
+Database -> Database: create new TOC
+loop for each Record in Datastore
+	Database -> Datastore: get Record Header
+	Datastore -> Database: Record Header
+	Database -> Database: add Record Header to TOC
+end
+Database -> Caller: return TOC
+@enduml
+
+@startuml
+Title: Datastore: Get Record
+Caller -> Datastore: get Record
+alt if Record is in Record Cache
+	Datastore -> Caller: return Record from Record Cache
+else Record is not in Record Cache
+	Datastore -> Disk: get Record
+	Disk -> Datastore: return Record
+	Datastore -> Datastore: add Record to Record Cache if Record exists
+	Datastore -> Caller: return Record if exists
+end
+@enduml
+
+@startuml
+Title: Datastore: Modify Record
+
+Caller -> Datastore: process Datastore Record Modification Event (DRME)
+Datastore -> Datastore: process DRME
+note left
+	see Datastore: Process Record Modification Event sequences
+end note
+Datastore -> Caller: return status of DRME
+@enduml
+
+@startuml
+Title: Datastore: Verify Consistency
+
+' TODO: check other things?
+Database -> Disk: get actual Datastore size
+Disk -> Database: Datastore size
+Database -> Database: calculate expected size
+alt actual Datastore size equals expected Datastore size
+	Database -> Caller: return verification success
+else actual Datastore size does not equal expected Datastore size
+	Database -> Caller: return verification failure
+end
+@enduml
+
+@startuml
+Title: Datastores: Merge
+
+Database -> Database: create set union of all Records in Datastores
+Database -> Disk: create new Datastore on disk with incremented version number
+note left
+	see Datastore: Initialize
+end note
+Disk -> Database: ok
+loop for each Record in union
+	alt if Record is not marked as deleted in TOC
+		Database -> Disk: serialize Record to new Datastore
+		Disk -> Database: ok
+	else Record is marked as deleted in TOC
+		Database -> Database: ignore Record
+	end
+end
+@enduml
+
+@startuml
+Title: Datastores: Rotate
+
+Database -> Database: pause Client Transactions
+Database -> Disk: move Primary Datastore to old Datastore
+Disk -> Database: ok
+Database -> Disk: move new Datastore to Primary Datastore
+Disk -> Database: ok
+Database -> Database: resume Client Transactions
+@enduml
+
+Record Modification Events
+--------------------------
+
+@startuml
+Title: Datastore: Process Record Modification Event Create
+
+Database -> Database: get new Datastore Object Id (DOI)
+Database -> Database: creating Record in memory with DOI and parameterized Datastore Object Type (DOT)
+Database -> Database: set Parent to parameterized Parent Node ID
+@enduml
+
+@startuml
+Title: Datastore: Process Record Modification Event Delete
+note over Database
+	note that this sequence is recurive
+end note
+loop for each Child Node
+	Database -> Database: delete Child Node
+end
+Database -> Database: delete Node (non-recursive)
+alt if Parent has no Child Node
+	Database -> Database: delete Parent Node
+end
+@enduml
+
+@startuml
+Title: Datastore: Process Record Modification Event Move
+
+Database -> Database: remove Child Node from old Parent
+Database -> Database: add Child Node to new Parent
+@enduml
+
+@startuml
+Title: Datastore: Process Record Modification Event Rename
+Database -> Database: set Node key to new name
+@enduml
+
+@startuml
+Title: Datastore: Process Record Modification Event Set Data
+Database -> Database: set Node Data to new data
+@enduml
