@@ -1,0 +1,65 @@
+DataController
+==============
+
+@startuml
+Title: DataController::rotate
+
+DataController -> DataController: create transitory Datastore in memory
+DataController -> TransitoryDatastore: initialize(primary data file, false)
+TransitoryDatastore -> DataController:
+DataController -> DataController: rotateJournal()
+DataController -> TransitoryJournal: applyToDatastore(TransitoryDatastore)
+TransitoryJournal -> DataController:
+DataController -> PrimaryDatastore: mergeWith(TransitoryDatastore, transitory file name)
+PrimaryDatastore -> DataController:
+DataController -> DataController: rotateDatastores()
+DataController -> Disk: deleteDatastore(TransitoryDatastore)
+Disk -> DataController:
+@enduml
+
+@startuml
+Title: DataController::rotateDatastores
+
+DataController -> Database: suspendTransactions()
+Database -> DataController:
+DataController -> Disk: move Primary Datastore to old Datastore
+Disk -> DataController:
+DataController -> Disk: move new Datastore to Primary Datastore
+Disk -> DataController:
+DataController -> Database: resumeTransactions()
+Database -> DataController:
+@enduml
+
+@startuml
+Title: DataController::rotateJournal
+
+DataController -> Database: suspendTransactions()
+Database -> DataController:
+DataController -> Disk: move Journal to Transitory Journal
+Disk -> DataController:
+DataController -> Journal: initialize(primary journal file name, old version + 1)
+Journal -> DataController:
+DataController -> Database: resumeTransactions()
+Database -> DataController:
+@enduml
+
+@startuml
+Title: DataController::verify
+
+participant Caller
+
+DataController -> Datastore: verify()
+
+alt if Datastore is inconsistent
+	DataController -> Caller: return verification failure
+else Datastore is consistent
+	Datastore -> DataController: Datastore is consistent
+	group try
+		DataController -> Journal: applyToDatastore(primary datastore)
+		Journal -> DataController: ok
+		DataController -> Caller: return verification success
+	else catch
+		DataController -> Caller: return verification failure
+	end
+end
+@enduml
