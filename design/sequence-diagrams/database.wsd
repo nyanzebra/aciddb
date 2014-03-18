@@ -1,0 +1,89 @@
+@startuml
+Title: Database: Initialize
+
+System -> Database: start program
+Database -> OS: register Signal Handlers
+OS -> Database: ok
+Database -> Database: verify Database consistency
+note left
+	see Database: Verify Consistency
+end note
+alt consistency check fails
+	Database -> System: terminate program with error
+
+else consistency check passes
+	Database -> Disk: initialize Primary Datastore
+	note left
+		see Datastore: Initialize
+	end note
+	Disk -> Database: ok
+
+	participant "Network Subsystem" as Network
+
+	Database -> Network: initialize Network Subsystem
+	Network -> Database: ok
+	Database -> Network: listen for Clients
+	Network -> Database: ok
+	loop until termination is requested
+		Database -> Network: wait for new Client
+		Network -> Database: new Client
+		group new thread
+			Database -> Database: handle Client
+		end
+	end
+	Database -> System: terminate program with success
+end
+@enduml
+
+@startuml
+Title: Database: Verify Consistency
+
+participant Caller
+
+Database -> Database: create new Datastore
+
+Database -> Datastore: check Datastore consistency
+note right
+	see Datastore: Verify Consistency
+end note
+
+alt if Datastore is inconsistent
+	Datastore -> Database: Datastore is inconsistent
+	Database -> Caller: return verification failure
+else Datastore is consistent
+	Datastore -> Database: Datastore is consistent
+	group try
+		Database -> Journal: Apply Transitory Journal
+		note right
+			see Journal: Apply To Datastore
+		end note
+		Journal -> Database: ok
+		Database -> Journal: Apply primary Journal
+		note right
+			see Journal: Apply To Datastore
+		end note
+		Journal -> Database: ok
+		Database -> Caller: return verification success
+	else catch
+		Database -> Caller: return verification failure
+	end
+end
+@enduml
+
+@startuml
+Title: Database: Handle System Signals
+'TODO: process more signals?
+
+System -> Database: send Signal
+Database -> Database: process Signal
+alt Signal is Termination Signal
+	Database -> Database: kick Clients
+	Database -> System: close Network Subsystem
+	System -> Database: ok
+	Database -> Database: close Primary Datastore
+	Database -> Database: close primary Journal
+	Database -> System: end process
+else Signal is not Termination Signal
+	Database -> Database: ignore signal
+end
+@enduml
