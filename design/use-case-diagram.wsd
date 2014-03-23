@@ -1,0 +1,34 @@
+@startuml
+left to right direction
+skinparam packageStyle rect
+
+actor DatabaseServer
+actor ClientApplication
+actor CLIApplication
+
+ClientApplication -left- (Connect To Database Server)
+
+ClientApplication <|-- CLIApplication
+
+rectangle ProcessStatement {
+  (Library Process Statement) .> (Backend Process Statement) : include
+  (CLI Process Statement) .> (Library Process Statement) : extend
+  ClientApplication -- (Library Process Statement)
+  CLIApplication -- (CLI Process Statement)
+}
+
+rectangle BackendStatements {
+  (Backend Process Statement) <. (Backend Delete Statement) : extends
+  (Backend Process Statement) <. (Backend Move Statement) : extends
+  (Backend Process Statement) <. (Backend Get Statement) : extends
+  (Backend Process Statement) <. (Backend Set Statement) : extends  
+}
+
+(Backend Delete Statement) -- DatabaseServer
+(Backend Move Statement) -- DatabaseServer
+(Backend Get Statement) -- DatabaseServer
+(Backend Set Statement) -- DatabaseServer
+
+DatabaseServer -- (Startup Consistency Verification)
+
+@enduml
