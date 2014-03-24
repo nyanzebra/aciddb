@@ -1,0 +1,95 @@
+@startuml
+
+[*] -> Initialization
+Initialization : Verify file integrity
+Initialization : Initialize network subsystem
+
+Initialization --> Cleanup : [files corrupt or network cannot be initialized]
+
+Initialization --> Operating : [initialization succeeds]
+
+Operating --> Cleanup : [process termination signal]
+
+Cleanup --> [*]
+Cleanup : Disconnect clients
+Cleanup : Close file handles
+
+state Operating {
+
+  [*] --> Idle
+  Idle : Spawn new thread for new client connections
+
+  --
+
+  state HandleClient as "Handling Client Thread"
+
+  [*] --> HandleClient
+  note top of HandleClient : This state is distinct for all client threads
+
+  HandleClient : Add client transactions to transaction queue
+  HandleClient --> [*] : [client disconnects]
+
+  --
+
+  state Waiting as "Waiting for Transactions"
+  state Processing as "Processing Transactions"
+  state Hold as "On Hold"
+
+  [*] --> Waiting
+  Waiting --> Processing : [transaction queue is not empty \nand transaction are not paused]
+  Processing --> Waiting : [transaction queue is empty]
+  Processing --> Processing : [transaction queue is not empty]
+
+  Processing : Process single transaction
+
+  Processing --> Hold : [transactions are paused]
+  Hold --> Processing : [transactions are not paused]
+
+  --
+
+  state Primary as "Primary Journal"
+  state Transitory as "Transitory Journal"
+
+  [*] --> Primary
+  Primary --> Transitory : [journals are rotating]
+  Transitory --> Primary : [journals are not rotating]
+
+  Primary : Write to Primary Journal
+  Transitory : Write to Transitory Journal
+  Transitory : Rotate files
+}
+
+@enduml
+
+[*] --> Load_Files
+Load_Files : Load journal and database files
+Load_Files --> Log_Error : [Files not loadable or damaged]
+Log_Error : Write error message to Log file
+Log_Error -left-> [*] : [Error logging finished]
+Load_Files --> Wait : [Files loaded]
+Wait : Wait for transactions 
+Wait --> ProcessTransaction : [Transaction received][Journal does not need rotation][System is not pending shutdown]
+Wait --> RotateJournal : [Journal needs rotation][System is not pending shutdown]
+Wait --> [*] : [Shut down signal received]
+
+state ProcessTransaction {
+  [*] --> GetItem
+  GetItem --> VerifyItem
+  VerifyItem --> ExecuteItem : [item is valid instruction]
+  VerifyItem --> [*] : [item is invalid] / Log error in Log file
+  ExecuteItem --> LogChanges : [item has been completed]
+  LogChanges --> GetItem : [Log has been updated]
+}
+
+state RotateJournal {
+  [*] --> Create_File
+  Create_File : do /create transitory file
+  Create_File --> Apply_Changes : File created
+  Apply_Changes : do /apply changes to datastore
+  Apply_Changes --> Swap : all changes applied
+  Swap : do/swap transitory and original files
+  Swap --> Clean_Up : Files have been swapped
+  Clean_Up : do/ Delete original file
+  Clean_Up --> [*] : File has been deleted
+  
+}
