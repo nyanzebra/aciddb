@@ -1,5 +1,7 @@
 @startuml
 
+'Server:
+
 hide empty methods
 hide empty fields
 
@@ -31,71 +33,12 @@ class ClientConnection {
 	- Transaction getTransaction()
 }
 
-class Transaction {
-	boolean readonly
-	char[][] statements
-}
-
-RecordNode "1" -- "1" RecordHeader : header
-RecordNode "1" -- "1" RecordBody : pointer to body
-
-Enum RecordType {
-	TypeAssociativeArray
-	TypeArray
-	TypeString
-	TypeBinaryString
-	TypeBoolean
-	TypeInteger
-	TypeFloatingPoint
-}
-
-class RecordHeader {
-	+ integer identifier
-	+ RecordType type
-	+ integer size
-}
-
-abstract class RecordBody
-
-RecordBody <|-- RecordAssociativeArray
-RecordBody <|-- RecordArray
-RecordBody <|-- RecordString
-RecordBody <|-- RecordBinaryString
-RecordBody <|-- RecordBoolean
-RecordBody <|-- RecordInteger
-RecordBody <|-- RecordFloatingPoint
-
-class RecordAssociativeArray {
-	+ integer numChildren
-	+ pair<char[] key, integer childId>[] children
-}
-
-class RecordArray {
-	+ integer numChildren
-	+ integer childId[] children	
-}
-
-class RecordString {
-	+ char[] data
-}
-
-class RecordBinaryString {
-	+ char[] data
-}
-
-class RecordBoolean {
-	+ boolean data
-}
-
-class RecordInteger {
-	+ integer data
-}
-
-class RecordFloatingPoint {
-	+ floatingPoint data
-}
-
 class Database
+
+class Transaction {
+	+ boolean readonly
+	+ char[][] statements
+}
 
 Container "1" -- "*" ContainerIterator : creates
 
@@ -205,5 +148,105 @@ enum DRMEStatus {
 	StatusDoesNotExist
 	StatusFailure
 }
+
+RecordNode "1" -- "1" RecordHeader : header
+RecordNode "1" -- "1" RecordBody : pointer to body
+
+Enum RecordType {
+	TypeAssociativeArray
+	TypeArray
+	TypeString
+	TypeBinaryString
+	TypeBoolean
+	TypeInteger
+	TypeFloatingPoint
+}
+
+class RecordHeader {
+	+ integer identifier
+	+ RecordType type
+	+ integer size
+}
+
+abstract class RecordBody
+
+RecordBody <|-- RecordAssociativeArray
+RecordBody <|-- RecordArray
+RecordBody <|-- RecordString
+RecordBody <|-- RecordBinaryString
+RecordBody <|-- RecordBoolean
+RecordBody <|-- RecordInteger
+RecordBody <|-- RecordFloatingPoint
+
+class RecordAssociativeArray {
+	+ integer numChildren
+	+ pair<char[] key, integer childId>[] children
+}
+
+class RecordArray {
+	+ integer numChildren
+	+ integer childId[] children	
+}
+
+class RecordString {
+	+ char[] data
+}
+
+class RecordBinaryString {
+	+ char[] data
+}
+
+class RecordBoolean {
+	+ boolean data
+}
+
+class RecordInteger {
+	+ integer data
+}
+
+class RecordFloatingPoint {
+	+ floatingPoint data
+}
+
+@enduml
+
+@startuml
+
+'Client:
+
+hide empty methods
+hide empty fields
+
+class DBContext {
+	- Address server
+	- boolean connected
+	- boolean error
+	+ DBContext(Address server)
+}
+
+Transaction <|-- ClientTransaction
+
+class ClientTransaction {
+	+ ClientTransaction(DBContext context)
+	+ Result commit()
+	+ void abort()
+	+ void add(char[][] statements)
+}
+
+class Result {
+	+ Variant[] responses
+}
+
+class Transaction {
+	+ boolean readonly
+	+ char[][] statements
+}
+
+class Network {
+	+ Address address
+	+ void send()
+}
+
+DBContext "1" -- "1" Network
 
 @enduml
