@@ -30,5 +30,6 @@ rectangle BackendStatements {
 (Backend Set Statement) -- DatabaseServer
 
 DatabaseServer -- (Startup Consistency Verification)
+DatabaseServer -- (Maintain Data)
 
 @enduml
