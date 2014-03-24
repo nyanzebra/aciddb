@@ -1,5 +1,5 @@
 @startuml
-
+'Transaction'
 [*] --> Uncommitted
 Uncommitted --> Pending : [Transaction::commit()]
 Uncommitted --> Aborted : [Transaction::abort()]
@@ -11,7 +11,7 @@ Committed --> [*]
 @enduml
 
 @startuml
-
+'Database Context'
 [*] --> Disconnected
 Disconnected --> Connected : [connection established]
 Disconnected --> [*] : [program terminates]
@@ -27,7 +27,7 @@ Connected : Transactions can be sent
 @enduml
 
 @startuml
-
+'Database'
 [*] -> Initialization
 Initialization : Opening resource handles
 Initialization : Verifing file integrity
@@ -52,3 +52,38 @@ Maintenance --> Cleanup : [critical error]
 
 @enduml
 
+@startuml
+'Client Connection'
+[*]->Connected : [created with valid connection]
+Disconnected --> Connected : [connect() and successfully connected]
+Connected --> Disconnected : [disconnect() or connection severed]
+Disconnected -> [*]
+
+@enduml
+
+@startuml
+'Network'
+[*] -> Disconnected
+Disconnected --> Connected : [connect() and successfully connected]
+Connected --> Disconnected : [disconnect() or connection severed]
+Disconnected -> [*]
+
+@enduml
+
+@startuml
+'Client Network Connection'
+[*] -> Connected : [created with valid connection]
+Disconnected --> Connected : [connect() and successfully connected]
+Connected --> Disconnected : [disconnect() or connection severed]
+Disconnected -> [*]
+
+@enduml
+
+@startuml
+'Data Controller'
+[*] -> Closed
+Opened --> Closed : [close() or files cannot be opened]
+Closed --> Opened : [files opened succesfully]
+Closed -> [*] 
+
+@enduml
