@@ -1,4 +1,5 @@
 @startuml
+skinparam backgroundColor transparent
 'Transaction'
 [*] --> Uncommitted
 Uncommitted --> Pending : [Transaction::commit()]
@@ -11,6 +12,7 @@ Committed --> [*]
 @enduml
 
 @startuml
+skinparam backgroundColor transparent
 'Database Context'
 [*] --> Disconnected
 Disconnected --> Connected : [connection established]
@@ -27,6 +29,7 @@ Connected : Transactions can be sent
 @enduml
 
 @startuml
+skinparam backgroundColor transparent
 'Database'
 [*] -> Initialization
 Initialization : Opening resource handles
@@ -53,6 +56,7 @@ Maintenance --> Cleanup : [critical error]
 @enduml
 
 @startuml
+skinparam backgroundColor transparent
 'Client Connection'
 [*]->Connected : [created with valid connection]
 Disconnected --> Connected : [connect() and successfully connected]
@@ -62,6 +66,7 @@ Disconnected -> [*]
 @enduml
 
 @startuml
+skinparam backgroundColor transparent
 'Network'
 [*] -> Disconnected
 Disconnected --> Connected : [connect() and successfully connected]
@@ -71,6 +76,7 @@ Disconnected -> [*]
 @enduml
 
 @startuml
+skinparam backgroundColor transparent
 'Data Controller'
 [*] -> Closed
 Opened --> Closed : [close() or files cannot be opened]
