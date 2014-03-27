@@ -1,0 +1,80 @@
+@startuml
+'Transaction'
+[*] --> Uncommitted
+Uncommitted --> Pending : [Transaction::commit()]
+Uncommitted --> Aborted : [Transaction::abort()]
+Pending --> Aborted : [commit fails]
+Aborted --> [*]
+Pending --> Committed : [commit succeeds]
+Committed --> [*]
+
+@enduml
+
+@startuml
+'Database Context'
+[*] --> Disconnected
+Disconnected --> Connected : [connection established]
+Disconnected --> [*] : [program terminates]
+Disconnected --> Error : [attempted connection failed]
+Disconnected : Transactions will fail
+Error --> Disconnected : [reset called]
+Error --> [*] : [program terminates]
+Error : Transactions will fail
+Connected --> Error : [unexpected disconnect\n or transaction fails]
+Connected --> Disconnected : [connection closed]
+Connected : Transactions can be sent
+
+@enduml
+
+@startuml
+'Database'
+[*] -> Initialization
+Initialization : Opening resource handles
+Initialization : Verifing file integrity
+Initialization : Initialize network subsystem
+
+Initialization --> Cleanup : [files corrupt or network\n cannot be initialized]
+
+Initialization --> Operating : [initialization succeeds]
+
+Operating --> Cleanup : [process termination signal]
+Operating : Handling clients
+Operating --> Maintenance : [files need to be rotated]
+
+Cleanup --> [*]
+Cleanup : Terminating client connections
+Cleanup : Closing resource handles
+
+Maintenance : Transactions are not processed
+Maintenance: Rotating files
+Maintenance --> Operating : [files have been rotated]
+Maintenance --> Cleanup : [critical error]
+
+@enduml
+
+@startuml
+'Client Connection'
+[*]->Connected : [created with valid connection]
+Disconnected --> Connected : [connect() and successfully connected]
+Connected --> Disconnected : [disconnect() or connection severed]
+Disconnected -> [*]
+
+@enduml
+
+@startuml
+'Network'
+[*] -> Disconnected
+Disconnected --> Connected : [connect() and successfully connected]
+Connected --> Disconnected : [disconnect() or connection severed]
+Disconnected -> [*]
+
+@enduml
+
+@startuml
+'Data Controller'
+[*] -> Closed
+Opened --> Closed : [close() or files cannot be opened]
+Closed --> Opened : [files opened succesfully]
+Closed -> [*] 
+
+@enduml

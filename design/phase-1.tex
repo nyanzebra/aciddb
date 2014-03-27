@@ -1,0 +1,842 @@
+\documentclass[a4paper]{report}
+
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{paralist}
+\usepackage{listings}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+
+\textsc{\LARGE Auburn University}\\[1.5cm]
+
+\textsc{\Large Phase 1}\\[0.5cm]
+
+\HRule \\[0.4cm]
+{ \huge \bfseries AcidDB \\[0.4cm] }
+\HRule \\[1.5cm]
+
+\begin{minipage}{0.5\textwidth}
+	\begin{flushleft} \large
+		\emph{Project Lead:}\\
+		Victor \textsc{Robertson} \texttt{vmrob@auburn.edu}
+	\end{flushleft}
+	\begin{flushleft} \large
+		\emph{Design Lead:}\\
+		Robert \textsc{Baldwin} \texttt{robbaldwin95@gmail.com}
+	\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.3\textwidth}
+	\begin{flushleft} \large
+		\emph{Software Engineer:}\\
+		Ethan \textsc{Mata} \texttt{mata.ethan@gmail.com}
+	\end{flushleft}
+	\begin{flushleft} \large
+		\emph{Software Engineer:}\\
+		Matt \textsc{Villarrubia} \texttt{mrv0003@auburn.edu}
+	\end{flushleft}
+	\begin{flushleft} \large
+		\emph{Software Engineer:}\\
+		Lowery \textsc{Quentin} \texttt{q@auburn.edu}
+	\end{flushleft}
+\end{minipage}
+
+\vfill
+
+% Bottom of the page
+{\large \today}
+
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+
+\chapter{Preface}
+
+\section[Contributors]{Team member contributions}
+
+We have been meeting every week since the project inception and have heavily collaborated on the overall design of the application.  Most of the work on this project was a collaborative effort and it's hard to segregate the responsibilities of the individual team members as much of the work was complete before the official requirements for the design document were available.
+
+\begin{description}
+	\item[Ethan Mata] Assisted in design for UML class models, UML state diagrams, essential and real use cases, diagramming and organization of the information in this document.
+	\item[Matt Villarrubia] Assisted in design for UML class models and UML state diagrams.
+	\item[Quentin Lowery] Assisted in design for UML state diagrams, UML class models, collection and formatting of this document.  Composed the concept statement.
+	\item[Robert Baldwin] Managed design for all components of the document, composed the Application Class Model, Application State Model, and use cases.
+	\item[Victor Robertson] Coordinated design decisions, managed the technical overview for each section of the document.  Composed the Application Class Model and the basis for the class diagrams.
+\end{description}
+
+\chapter{Domain analysis}
+
+\section{Concept statement}
+
+	To provide assurance that database transactions are not affected by failures, there exists a set of properties that guarantee that database transactions are processed reliably. These properties are known as ACID. ACID stands for atomic, consistent, isolated, and durable. Atomicity is the property that any transaction will either entirely succeed or entirely fail. To the outside world transactions appear to be indivisible. Consistency ensures that all transactions will bring the database into a valid state. Isolation means that the concurrent execution of transactions will lead to a state that would be obtained as though the transactions were executed sequentially. Durability is the property that once a transaction is committed it will stay committed, even if there is power loss or if there are other external problems. Our database will have transactions that uphold these properties without adding the complexity of larger databases.
+
+	Our goal is to explore the area between complex ACID-compliant databases and fast in-memory databases. In order to do this, the database server should exist as a program that keeps data on disk and should be accessible through a network. The data’s state in the database should only be interacted with through ACID-compliant transactions.
+
+	There should also be a library for c++ to allow other clients to interact with our server. The library should include database commands and the ability to automatically execute commands. A terminal interface should be included, programmed with the c++ library and the commands for the database.
+
+\section{Client library domain model}
+
+	\includegraphics[width=\linewidth]{class-diagrams/client-classes.png}
+
+	The client library is, by design, minimal and, as such, does not have many classes or complex behavior.  At the most, the classes in the client library are wrappers for a developer to communicate with the database server.
+
+\newpage
+
+\section{Database server domain model}
+
+	\begin{center}
+		\makebox[\textwidth][c]{\includegraphics[width=0.8\paperwidth]{class-diagrams/server-classes.png}}
+	\end{center}
+
+\section{Client library state model}
+	
+	\begin{center}
+		\includegraphics[width=0.8\linewidth]{state-diagrams/uml-client-state.png}
+	\end{center}
+
+	The Client Library state model has two primary states: Connected and Disconnected. During the Disconnected state, all attempted transactions will fail. Once connected, each transaction will occupy its own distinct state.
+
+\section{Database server state model}
+
+	\includegraphics[width=\linewidth]{state-diagrams/uml-server-state.png}
+
+	The server state model has three overall states: Initialization, Operating, and Cleanup. The Initialization state involves verifying the file system integrity, as well as starting the network subsystem to accept client requests. From there, the Operating state will occupy most of the server's execution which has several concurrent internal states. For each new client connection, a distinct state will represent that client. Likewise, the transaction processing state will determine if transactions are able to be processed at any given time. The server also maintains a state for the journal as well. Some of these concurrent states will even cause state transitions in others.
+
+\chapter{Application analysis}
+
+\section{Use cases}
+
+	\begin{center}
+		\makebox[\textwidth][c]{\includegraphics[width=0.7\paperwidth]{use-case-diagram/use-case-diagram.png}}
+	\end{center}
+
+	As we are designing a software tool and not an application with a limited, yet well-defined purpose, the number of different use cases is inherently smaller than that of a larger system. The primary purpose for this is to provide orthogonality to the application developer that makes use of this database and associated library. Through thorough discussion we decided on the four core commands the database should accept: get, set, delete, and move. By only using those four commands, we can replicate much higher level functionality without complicating the core program. We did consider adding additional features such as expiration timers for keys, more data types, and additional languages to code the client-side library in, but decided that we should focus on what is possible to design and implement in the limited time we were given. If we are able to implement all of the features described in this design document by the delivery date, this project will be a resounding success.
+
+	\pagebreak
+
+	\subsection{Consistency checking on database startup}
+
+	\begin{description}
+		\item[Summary] When the database server starts, verify the integrity of the data contained therein.
+		\item[Actors] Database Server
+		\item[Precondition] Database server is not in operation
+
+		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
+			User Intention: & System Responsibility: \\ \hline
+			\begin{description}
+				\item User starts the Database Server.
+			\end{description} & \\
+			& \begin{description}
+				\item Database verifies the size information contained in the file system and the database journal.
+				\item If the database detects that the server was shut down incorrectly, take steps to repair the file system data.
+				\item If the repair process was unnecessary or completed successfully, the server starts normally.  Otherwise, the server terminates with an exception.
+			\end{description}
+		\end{tabular}
+
+		\item[Exceptions] Under the exception case, the database will not be able to start properly.
+			\begin{enumerate}
+				\item The database is unable to automatically repair faulty file system data.
+				\item The failure is noted in the log and a message is provided to the user with an explanation.
+				\item The server is terminated.
+			\end{enumerate}
+		\item[Postcondition] The server’s data is consistent and it is able to accept clients for transactions.
+	\end{description}
+
+	\pagebreak
+
+	\subsection{Maintain Data}
+
+	\begin{description}
+		\item[Summary] The Database server rotates the journal files and applies the changes to the hard copy
+		\item[Actors] Database Server
+		\item[Precondition] Journal has entries
+		
+		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
+			User Intention: & System Responsibility: \\ \hline
+			& \begin{description}
+			\item Pause all client transactions.
+			\item Swap out the primary journal.
+			\item Resume transactions.
+			\item Create a new datastore on disk that consists of the contents of the old datastore and the modifications contained in the journal.
+			\end{description}
+		\end{tabular}
+		
+		\item[Exceptions] No exceptions as all failures are handled gracefully at a later time.
+		\item[Postcondition] Primary Journal has been applied to the on-disk store and no longer contains entries.
+	\end{description}
+
+	\pagebreak
+
+	\subsection{Library Process Statements}
+
+	\begin{description}
+		\item[Summary] A transaction provided by the Client Application is sent to the Database Server for a response
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] Client Application is connected to the Database Server
+
+		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
+			User Intention: & System Responsibility: \\ \hline
+			& \begin{description}
+				\item Construct a transaction.
+				\item Construct statements and add them to the transaction.
+				\item Call commit on the transaction.
+			\end{description} \\
+			\begin{description}
+				\item Send the transaction to the database server.
+				\item Return the status of the transaction to the Client Application.
+			\end{description} & \\
+		\end{tabular}
+
+		\item[Exceptions] In the exceptional state, a software exception is thrown and must be caught by the client program.
+		\begin{enumerate}
+			\item The Client Application fails to communicate with the Database Server.
+			\item The Database Context is moved to the error state.
+			\item An exception is thrown and propagated to the Client Application.
+		\end{enumerate}
+		\item[Postcondition] The Client Application and Database Server are ready for new transactions.
+	\end{description}
+	
+	\pagebreak
+
+	\subsection{Backend Process Transaction}
+
+	\begin{description}
+		\item[Summary] The Database Server processes a transaction from the client.
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] Client Application has sent a transaction to the server and the server is able to process transactions.
+
+		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
+			User Intention: & System Responsibility: \\ \hline
+			& \begin{description}
+				\item Verify the existence of the transaction statement commands.
+				\item Validate the syntax of the transaction statement commands.
+				\item If the statements are valid, invoke the appropriate use case for the statement commands.
+				\item Otherwise, abort the transaction and inform the Client Application of the failure.
+			\end{description}
+		\end{tabular}
+
+		\item[Exceptions] None; all statements sent by clients are properly handled and responded to accordingly.
+		\item[Postcondition] If the statements were valid, the server processes them and replies with valid information.
+	\end{description}
+
+	\pagebreak
+
+	\subsection{Backend Get Statement}
+
+	\begin{description}
+		\item[Summary] The Database Server returns the value of a key-value pair with the given key to the client.
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] The server has processed the client’s transaction correctly.
+
+		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
+			User Intention: & System Responsibility: \\ \hline
+			& \begin{description}
+				\item Server retrieves the specified records from the database.
+				\item If the requested record exists, provide the record.
+				\item Otherwise, return a status code indicating failure.
+			\end{description}
+		\end{tabular}
+
+		\item[Exceptions] None. The preconditions for this use case require valid inputs and are enforced by the prerequisite use case.
+		\item[Postcondition] Client has either received the record or status code indicating why the record could not be retrieved.
+	\end{description}
+
+	\pagebreak
+	
+	\subsection{Backend Set Statement}
+
+	\begin{description}
+		\item[Summary]  The Database Server sets the value of a key-value pair to a new value, then returns a status code to the client. 
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] The server has processed the client’s transaction correctly.
+
+		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
+			User Intention: & System Responsibility: \\ \hline
+			& \begin{description}
+			\item Server finds the specified record from the database.
+			\item If the requested record exists, delete the previous record.
+			\item Create a new record with the attributes specified in the transaction.
+			\item Inform the Client Application that the operation succeeded. 
+			\end{description}
+		\end{tabular}
+
+		\item[Exceptions] None. The preconditions for this use case require valid inputs and are enforced by the prerequisite use case.  The Set operation never fails and always results in a new record being created or previous one overwritten.
+		\item[Postcondition] Client has received a success status code.  The record specified by the transaction has been modified in accordance with the transaction’s statements.
+	\end{description}
+
+	\pagebreak
+
+	\subsection{Backend Move Statement}
+
+	\begin{description}
+		\item[Summary] The Database Server changes the name of the key-value pair with the given key and returns a status code to the client.
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] The server has processed the client’s transaction correctly.
+
+		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
+			User Intention: & System Responsibility: \\ \hline
+			& \begin{description}
+				\item Server retrieves the specified records from the database.
+				\item If the requested record exists, modify the record’s key and associated record keys with the new location specified by the transaction statement.
+				\item Otherwise, return a status code indicating failure.
+			\end{description}
+		\end{tabular}
+
+		\item[Exceptions] None. The preconditions for this use case require valid inputs and are enforced by the prerequisite use case.
+		\item[Postcondition] Client has received a status code indicating the result of the operation.  The record specified by the transaction has been modified in accordance with the transaction’s statements if it existed.
+	\end{description}
+
+	\pagebreak
+
+	\subsection{CLI Process Statement}
+
+	\begin{description}
+		\item[Summary] Accepts interface commands and sends each statement to the Database Server with the expectation of a plaintext return status.
+		\item[Actors] CLI Application, Database Server
+		\item[Precondition] CLI Application is already connected to the Database Server
+
+		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
+			User Intention: & System Responsibility: \\ \hline
+			\begin{description}
+				\item User provides a statement to the CLI Application.
+			\end{description} & \\
+			& \begin{description}
+				\item Invoke the Library Process Statement use case.
+				\item Output plaintext results to the command line interface.
+			\end{description}
+		\end{tabular}
+
+		\item[Exceptions] In the exceptional case, the CLI Application should gracefully terminate.
+		\begin{enumerate}
+			\item The CLI Application fails to communicate with the Database Server.
+			\item The CLI Application terminates with an error message.
+		\end{enumerate}
+		
+		\item[Postcondition] The CLI Application is ready to accept new statements.
+	\end{description}
+
+	\pagebreak
+
+	\subsection{Connect to Database Server}
+
+	\begin{description}
+		\item[Summary] The Client attempts to connect to the Database Server.
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] The server is accepting client connections.
+
+		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
+			User Intention: & System Responsibility: \\ \hline
+			& \begin{description}
+				\item Connect to specified server address with custom protocol.
+				\item Server responds appropriately and connection is established.
+			\end{description}
+		\end{tabular}
+
+		\item[Exceptions] Exceptions are not propagated as a result of these failures.
+		\begin{enumerate}
+			\item The Client Application cannot connect to the server address.
+			\item The Database Context is still in a disconnected state.
+		\end{enumerate}
+		\item[Postcondition] The Client Application is connected to the Database Server and is able to process transactions.
+	\end{description}
+
+	\pagebreak
+
+\section{Essential use cases}
+
+	\subsection{Client connects to Database Server}
+
+	\begin{description}
+		\item[Summary] The client establishes a connection to the Database Server
+		\item[Actors] Client Application, Database Server 
+		\item[Precondition] Client is not connected to the Database Server.
+		\item[Scenarios] :
+		
+		\begin{lstlisting}
+Client Application creates a Database Context object
+	with a specified address.
+Client Library connects to the Database Server.
+Client Library returns success.
+		\end{lstlisting}
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-connect-to-database-server.png}
+		\end{center}
+
+		\item[Exceptions] Client cannot establish a connection to Database Server and returns an error.
+		\item[Postcondition] Client is connected to the Database Server.
+	\end{description}
+
+	\pagebreak
+
+	\subsection{All commands}
+
+	\begin{description}
+		\item[Summary] The server receives a transaction from the client.
+		\item[Actors] Client Library, Database Server
+		\item[Precondition] Client is connected to Database Server
+		\item[Scenarios] :
+
+		\begin{lstlisting}
+Client connects to database
+Client creates transaction
+Client adds statements to transaction
+Client commits transaction
+Library sends transaction to database server
+Database Server responds with results for each statement
+Library returns results to Client
+		\end{lstlisting}
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-all-commands.png}
+		\end{center}
+
+		\item[Exceptions] Transaction or commit reaches the server with invalid syntax, the database returns an error to the client.
+		\item[Postcondition] Application interface and Database server are ready to accept new transactions.
+	\end{description}
+	
+	\pagebreak
+	
+	\subsection{Get statement}
+
+	\begin{description}
+		\item[Summary] The server receives a ‘get’ statement, and returns the value associated with the given key.
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] Client is connected to Database Server
+		\item[Scenarios] :
+
+		\begin{lstlisting}
+Statement is composed with the name of the key desired
+Database Server returns value associated with the key
+		\end{lstlisting}
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-get-command.png}
+		\end{center}
+
+		\item[Exceptions] Transaction or commit reaches the server, the key cannot be found. The server then returns an error to the client.
+
+		\item[Postcondition] If the key exists, the client receives the value associated with it.
+	\end{description}
+
+	\pagebreak
+	
+	\subsection{Set statement}
+
+	\begin{description}
+		\item[Summary] The server receives a ‘set’ statement, and creates the given key/value pair if it does not already exist.
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] Client is connected to Database Server
+		\item[Scenarios] :
+
+		\begin{lstlisting}
+Statement is composed with the name of the key and the value
+	of the key
+Database Server always returns that the operation succeeded
+		\end{lstlisting}
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-set-command.png}
+		\end{center}
+
+		\item[Exceptions] None
+		\item[Postcondition] Key/value pair is in the database.
+	\end{description}
+	
+	\pagebreak
+
+	\subsection{Delete statement}
+
+	\begin{description}
+		\item[Summary] The server receives a ‘delete’ statement, and attempts to remove all key/value pairs with the given key.
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] Client is connected to Database Server
+		\item[Scenarios] :
+		
+		\begin{lstlisting}
+Statement is composed with the name of the key to be deleted
+Database Server returns the number of keys deleted
+	with that name
+		\end{lstlisting}
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-delete-command.png}
+		\end{center}
+
+		\item[Exceptions] Transaction or commit reaches the server, the key cannot be found.  The server then returns an error to the client.
+		\item[Postcondition] Key/value pair is not in the database.
+	\end{description}
+	
+	\pagebreak
+
+	\subsection{Move statement}
+
+	\begin{description}
+		\item[Summary] The server receives a ‘move’ statement, and changes the key name of a key/value pair.
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] Client is connected to Database Server 
+		\item[Scenarios] :
+
+		\begin{lstlisting}
+Statement is composed with the name of a key and a new name
+Database Server returns success if the operation succeeded
+Otherwise, the Database Server returns that the operation failed
+		\end{lstlisting}
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-move-command.png}
+		\end{center}
+
+		\item[Exceptions] Transaction or commit reaches the server, the key cannot be found.  The server then returns an error to the client.
+		\item[Postcondition] If the key/value pair exists, then the key name is changed.
+	\end{description}
+
+	\pagebreak
+
+	\subsection{Graceful recovery during startup}
+
+	\begin{description}
+		\item[Summary] The database attempts to start regularly if there is a file error.
+		\item[Actors] Database Server
+		\item[Precondition] Database file data is corrupt
+		\item[Scenarios] :
+
+		\begin{lstlisting}
+Database Server initializes
+Database Server determines that the database file data is corrupt
+Database Server attempts to repair the file data
+A message is logged
+If the repair succeeds, the startup proceeds as normal
+Otherwise, the server terminates with an error
+		\end{lstlisting}
+
+		\begin{center}
+			\includegraphics[width=0.7\linewidth]{sequence-diagrams/essential-sequences-graceful-recovery.png}
+		\end{center}
+
+		\item[Exceptions] The file data cannot be repaired.  The Database Server terminates the application.
+		\item[Postcondition] Database recovers and resumes initialization
+	\end{description}
+	
+\section{Concrete use cases}
+
+	\subsection{Connect To Database Server}
+
+	\begin{description}
+		\item[Summary] The client connects to the Database Server
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] Client is not connected to Database Server
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-connect-to-database.png}
+		\end{center}
+
+		\item[Exceptions] Client cannot connect to the Database Server, and receives an error code.
+		\item[Postcondition] Client is connected to Database Server
+	\end{description}
+
+	\pagebreak
+	
+	\subsection{Library Process Transaction}
+
+	\begin{description}
+		\item[Summary] Takes a transaction from Client Application and send to Database Server and obtains a response from the Database Server
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] Database Context has valid connection to Database Server
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-library-process-transaction.png}
+		\end{center}
+
+		\item[Exceptions] Transaction fails, and the caller receives an error code.
+		\item[Postcondition] Response from the Database Server is given
+	\end{description}
+	
+	\pagebreak
+
+	\subsection{CLI Process Transaction}
+
+	\begin{description}
+		\item[Summary] Accepts Interface commands and sends to Database Server and returns a textual status.
+		\item[Actors] CLI Application, Database Server
+		\item[Precondition] None
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-cli-process-transaction.png}
+		\end{center}
+
+		\item[Exceptions] None
+		\item[Postcondition] Output on command line from the Database Server
+	\end{description}
+
+	\pagebreak
+
+	\subsection{Backend Process Transaction}
+
+	\begin{description}
+		\item[Summary] The Database Server processes a transaction from the client.
+		\item[Actors] Database Server
+		\item[Precondition] The Database Server received a transaction
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-backend-process-transaction.png}
+		\end{center}
+
+		\item[Exceptions] If the transaction is invalid, an error code is returned to the client.
+		\item[Postcondition] The transaction is processed if it is valid
+	\end{description}
+	
+	\pagebreak
+
+	\subsection{Maintain Data}
+
+	\begin{description}
+		\item[Summary] The Database server rotates the journal files and applies the changes to the hard copy
+		\item[Actors] Database Server
+		\item[Precondition] None
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-maintain-data.png}
+		\end{center}
+
+		\item[Postcondition] Primary journal has been applied to the hard copy and is now empty
+	\end{description}
+
+	\pagebreak
+	
+	\subsection{Backend Delete Statement}
+
+	\begin{description}
+		\item[Summary] The Database Server removes all key-value pairs with the given key
+		\item[Actors] Database Server
+		\item[Precondition] At least one requested key-value pair exists
+
+		\begin{center}
+			\includegraphics[width=0.8\linewidth]{sequence-diagrams/datastore-process-delete-sequence.png}
+		\end{center}
+
+		\item[Exceptions] If no matching pairs exist, an error code is returned to the client.
+		\item[Postcondition] The key-value pairs are removed
+	\end{description}
+	
+	\pagebreak
+
+	\subsection{Backend Move Statement}
+
+	Note that the 
+
+	\begin{description}
+		\item[Summary] The Database Server changes the name of the node with the given key
+		\item[Actors] Database Server
+		\item[Precondition] A node with the given key exists
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/datastore-process-move-sequence.png}
+		\end{center}
+
+		\item[Exceptions] If the key-value pair does not exist, an error code is returned to the client.
+		\item[Postcondition] The node now has the new name
+	\end{description}
+
+	\pagebreak
+	
+	\subsection{Backend Get Statement}
+
+	\begin{description}
+		\item[Summary] The Database Server returns the value of a key-value pair with the given key.
+		\item[Actors] Client Application, Database Server
+		\item[Precondition] A record with the given key exists
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/datastore-get-record-sequence.png}
+		\end{center}
+
+		\item[Exceptions] If the key-value pair does not exist, an error code is returned to the client.
+		\item[Postcondition] The client receives the value associated with the key.
+	\end{description}
+
+	\pagebreak
+	
+	\subsection{Backend Set Statement}
+
+	\begin{description}
+		\item[Summary] The Database Server sets the value of a key-value pair to a new value
+		\item[Actors] Database Server
+		\item[Precondition] The requested key-value pair exists
+
+		Note that the Set statement is equivalent to the deletion and then creation of a record node.
+
+		\begin{center}
+			\includegraphics[width=0.6\linewidth]{sequence-diagrams/datastore-process-delete-sequence.png}
+		\end{center}
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/datastore-process-create-sequence.png}
+		\end{center}
+
+		\item[Exceptions] If the key-value pair does not exist, it is created.
+		\item[Postcondition] The key-value pair now has the new value.
+	\end{description}
+
+	\pagebreak
+	
+	\subsection{Startup Consistency Verification}
+
+	\begin{description}
+		\item[Summary] On startup, the Database Server checks its file system for validity
+		\item[Actors] Database Server
+		\item[Precondition] The Database Server is not running
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-startup-consistency.png}
+		\end{center}
+
+		\item[Exceptions] If the data cannot be verified, an error is returned.
+		\item[Postcondition] The Database Server runs and presents valid data
+	\end{description}
+
+\chapter{Application class model}
+
+\section{Interface}
+
+	As the application we’re developing is a library for other developers to utilize, our interface differs from tradition in the sense that the library classes and usage is the interface. As such, the interface is designed to utilize modern c++ idioms including Resource Acquisition Is Initialization (RAII), type safety, and the usage of templates to reduce overhead costs. Our classes are designed to look and feel like classes from the Standard Template Library (STL) and thus developers familiar with them should feel right at home.
+
+	The interface should be minimal and be mostly independent of the actual statement logic as the server and supported commands may improve over time. The client application, the protocol, and the client libraries shouldn’t, in most cases, have to be updated as the result of something such as the addition of a new command. The client library should act as an intermediary between the client application and the server and perform no actions other than translating the command statements and returning results from those statements.
+
+	\begin{lstlisting}
+#include <iostream>
+#include <aciddb>
+
+int main() {
+
+  // RAII context
+  acid::Context context("localhost:2500");
+  
+  {
+	// with read only transactions, there's no need
+	// to commit anything.
+	acid::Transaction transaction(context
+	    , acid::ReadOnly);
+
+	acid::Record users = transaction.get("users", {
+	  "victor",
+	  "rob",
+	  "ethan"
+	});
+
+	for (auto& u : users) {
+	  if (!u) {
+		std::cout << u << " does not exist" << std::endl;
+	  }
+
+	  std::cout << u["handle"].as<std::string>()
+				<< std::endl;
+	}
+	// transaction aborted by default.
+	// For read only, this means nothing.
+  }
+  
+  {
+	// write transactions can read data, but can only hold
+	// a lock on a single get request at once
+	acid::Transaction transaction(context);
+
+	acid::Record users
+	  = transaction.get("users", {"victor", "rob"});
+
+	if (users["victor"]) {
+	  // committing a transaction is exactly the
+	  // same as aborting it if no writes were made.
+	  // Committing the transaction early allows
+	  // for the client application to release any
+	  // locks it holds with the server. if nothing
+	  // happened, does not invalidate existing records
+	  transaction.commit();
+	  std::cout
+		<< users["victor"]["name"].as<std::string>() << std::endl
+		<< users["victor"]["handle"].as<std::string>() << std::endl
+		<< users["victor"]["age"].as<int>() << std::endl
+		<< users["victor"]["email"].as<std::string>() << std::endl
+	  ;
+	} else {
+	  transaction.insert("users", "victor", {
+		{ "name", "victor" },
+		{ "handle", "vmrob" },
+		{ "age", "24" },
+		{ "email", "victor.robertson.iv@gmail.com" }
+	  }).commit();
+	}
+
+	// transaction aborted by default
+  }
+
+  {
+	// deleting records works the same way
+	if (acid::Transaction(context).erase("users", {
+		"victor",
+		"rob"
+	}).commit()) {
+	  std::cout << "success" << std::endl;
+	};
+  }
+
+  {
+	// maybe it should be even easier to use
+	acid::Transaction(context).eraseIf("users"
+		, acid::RegexMatch("name", "expression")).commit();
+
+	acid::Transaction(context, acid::ReadOnly).getIf("users"
+		, acid::RegexMatch("name", "expression")).commit();
+  }
+}
+\end{lstlisting}
+
+\section{Boundary and controller classes}
+
+	Boundary classes are the interaction points between the actors and the controllers. The boundary classes for the Client Application using our library are the Transaction class and, to some degree, the Database Context object. Other than that, all interaction with the database is done through Transaction classes and their associated Result containers. The Database Context only acts as a boundary object in determining the Database Server to connect to. Otherwise, it acts as the primary controller for the network subsystem, the Transaction scheduling, and the Transaction responses.
+
+	The boundary classes for our Client Library are the network subsystem and the Transactions. The network subsystem handles all communication with the Database Server and the Transaction interface is the primary means to communicate with the Client Application. The controller, in this case, is also the Database Context object and as the Client Library and the Client Application are intimately related, the boundary classes and the controller objects have much overlap when viewing these actors as distinct entities.
+
+	The boundary classes for the Database Server are the Client Connection. There are also several classes that act as controllers for the server: The Data Controller and the Database objects are the most notable ones as they control the interactions between the Client Connections, the Network, and the Journal classes. The Client Connection will typically create a Transaction object which it will pass as a message to the Database Controller. The Database Controller then parses each statement string in the Transaction message and generates a series of Database Record Modification Events (DRMEs) which it uses as messages to indicate to the Data Controller how the data in the database is to be modified. The Data Controller then communicates with its entities, the Datastore and the Journal, those DRMEs which are logged to disk and then applied to the in-memory version of the database.
+
+\chapter{Application state model}
+
+\section{Client library state classes}
+
+	There are several classes that maintain state in the library and server. The library’s Database Context, Transaction, and Network classes all have state. The state maintained by the Database Context is whether or not the client is connected and whether or not the context is in an error state. The Transaction class’ state is whether or not the Transaction has been committed or pending. The Network stores it’s own connected state. Transition between these multiple concurrent states are triggered by changes in associated objects. For example, if a Transaction moves to the pending state but then fails to commit, it is moved to the uncommitted state and also triggers the Database Context to move to the error state.
+
+	\includegraphics[width=0.8\linewidth]{class-diagrams/client-classes.png}
+
+	\subsection{Database Context}
+		\includegraphics[width=\linewidth]{state-diagrams/database-context-application-state.png}
+	\subsection{Transaction}
+		\includegraphics[width=0.7\linewidth]{state-diagrams/transaction-application-state.png}
+	\subsection{Network}
+		\includegraphics[width=\linewidth]{state-diagrams/network-application-state.png}
+
+\section{Database server state classes}
+
+	The Database Server’s Client Connection, Database, Data Controller, and Network also have state. The Client Connection, like the Network class from the client, maintains its own connected state while the Database has different operational modes such as a maintenance mode. The Data Controller must maintain the status of their associated files--open or closed.
+
+	\subsection{Client Connection}
+		\includegraphics[width=\linewidth]{state-diagrams/client-connection-application-state.png}
+	\subsection{Database}
+		\includegraphics[width=\linewidth]{state-diagrams/database-application-state.png}
+	\subsection{Data Controller}
+		\includegraphics[width=0.8\linewidth]{state-diagrams/data-controller-application-state.png}
+	\subsection{Network}
+		\includegraphics[width=0.8\linewidth]{state-diagrams/network-application-state.png}
+
+\chapter{Review}
+
+\section{Model review}
+
+	For the most part, we are very pleased with how our analysis models describe both the problem and our solution. We, however, feel that the models do not adequately portray the durability and atomicity aspects of the database structure.  Quite simply, it's just not possible to develop a truly concrete sequence diagram because there is always room for the developer to interpret the project requirements. Additionally, we also noted that the multi-threaded nature of our database was likewise not represented in full.  In order to mitigate the impact these limitations will have on our final implementation, we plan to test our software considerably and utilize continous integration during the implementation phase to ensure that these aspects of the program will remain valid.
+
+	During the analysis and design phase, we implemented several safeguards to ensure that our finished models were correct, complete, and consistent. In order for an element of the models to be admitted to our group's repository, it was required to have at least one other member of the group approve it. In this way, we ensured that errors were less likely to end up in the final models by increasing the amount of inspection that each piece was subjected to. Additionally, during our weekly meetings, we discussed heavily the technical aspects of our design. To ensure that the analysis and design models are consistent with each other, we cross-referenced the models with each other and ensured that changes in one model were reflected into our others. By adding these safeguards and inspections, our analysis and design models are held to high standards of quality.
+
+\end{document}
