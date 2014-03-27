@@ -1,5 +1,5 @@
-@startuml
-
+@startuml clientstate.png
+skinparam backgroundColor transparent
 'client state'
 
 [*] -> Disconnected
@@ -28,8 +28,8 @@ state Connected {
 
 @enduml
 
-@startuml
-
+@startuml serverstate.png
+skinparam backgroundColor transparent
 'server state'
 
 [*] -> Initialization
