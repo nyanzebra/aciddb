@@ -8,18 +8,22 @@ actor DatabaseServer
 actor ClientApplication
 actor CLIApplication
 
-ClientApplication -left- (Connect To Database Server)
+ClientApplication -- (Connect To Database Server)
 
 ClientApplication <|-- CLIApplication
 
-rectangle ProcessStatement {
+rectangle Shared {
+	(Backend Process Statement)
+}
+
+rectangle Client {
   (Library Process Statement) .> (Backend Process Statement) : include
   (CLI Process Statement) .> (Library Process Statement) : extend
   ClientApplication -- (Library Process Statement)
   CLIApplication -- (CLI Process Statement)
 }
 
-rectangle BackendStatements {
+rectangle Server {
   (Backend Process Statement) <. (Backend Delete Statement) : extends
   (Backend Process Statement) <. (Backend Move Statement) : extends
   (Backend Process Statement) <. (Backend Get Statement) : extends
@@ -33,5 +37,6 @@ rectangle BackendStatements {
 
 DatabaseServer -- (Startup Consistency Verification)
 DatabaseServer -- (Maintain Data)
+DatabaseServer -- (Connect To Database Server)
 
 @enduml
