@@ -2,6 +2,8 @@
 left to right direction
 skinparam packageStyle rect
 
+skinparam backgroundColor transparent
+
 actor DatabaseServer
 actor ClientApplication
 actor CLIApplication

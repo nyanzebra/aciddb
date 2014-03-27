@@ -237,6 +237,8 @@ class Result {
 	+ Variant[] responses
 }
 
+Transaction "*" -- "1" DBContext
+
 class Transaction {
 	+ boolean readonly
 	+ char[][] statements

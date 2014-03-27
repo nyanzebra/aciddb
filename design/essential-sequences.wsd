@@ -1,0 +1,64 @@
+@startuml
+'Client Connects to Database Server'
+
+ClientApplication -> DatabaseServer : attempt connection
+alt connection successful
+	DatabaseServer -> ClientApplication : return connection information
+else connection not successful
+	ClientApplication -> ClientApplication : connection times out
+end
+
+@enduml
+
+@startuml
+'All Commands'
+
+ClientApplication -> DatabaseServer : connect
+ClientApplication -> ClientApplication : create a transaction
+ClientApplication -> ClientApplication : add statements to transaction
+ClientApplication -> DatabaseServer : send Transaction
+DatabaseServer -> DatabaseServer : process Transaction
+DatabaseServer -> ClientApplication : return result
+
+@enduml
+
+@startuml
+'Set Statement'
+
+ClientApplication -> ClientApplication : compose statement with key and value
+ClientApplication -> DatabaseServer : send Transaction
+DatabaseServer -> DatabaseServer : delete old record
+DatabaseServer -> DatabaseServer : create new record
+DatabaseServer -> ClientApplication : returns success
+
+@enduml
+
+@startuml
+'Get Statement'
+
+ClientApplication -> ClientApplication : compose statement with key
+ClientApplication -> DatabaseServer : send Transaction
+DatabaseServer -> DatabaseServer : get record
+DatabaseServer -> ClientApplication : return record with key
+
+@enduml
+
+@startuml
+'Delete statement'
+
+ClientApplication -> ClientApplication : compose statement with key
+ClientApplication -> DatabaseServer : send Transaction
+DatabaseServer -> DatabaseServer : delete record
+DatabaseServer -> ClientApplication : return success
+
+@enduml
+
+@startuml
+'Move statement'
+
+ClientApplication -> ClientApplication : compose statement with old key and new key
+ClientApplication -> DatabaseServer : send Transaction
+DatabaseServer -> DatabaseServer : rename/move key
+DatabaseServer -> ClientApplication : return status
+
+@enduml
