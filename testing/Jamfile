@@ -3,5 +3,7 @@ lib testing : testing.cpp :
 	<toolset>darwin:<cxxflags>"-std=c++11 -fcolor-diagnostics"
 	<toolset>gcc:<cxxflags>"-std=c++11"
 : :
+	<toolset>darwin:<cxxflags>"-std=c++11 -fcolor-diagnostics"
+	<toolset>gcc:<cxxflags>"-std=c++11"
 	<include>.
 ;
