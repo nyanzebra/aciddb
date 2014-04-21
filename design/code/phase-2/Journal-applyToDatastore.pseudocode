@@ -1,0 +1,3 @@
+Journal.applyToDatastore(Datastore d)
+	for each journal entry j in journal
+		d.apply(j)

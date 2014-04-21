@@ -1,0 +1,6 @@
+ClientConnection.threadEntry()
+	while client is connected
+		data = network.receive()
+		new transaction
+		transaction = received transaction
+		return Database.handleTransaction(transaction)

@@ -1,0 +1,27 @@
+@startuml use-case-client-library-process-statement.png
+
+ClientApplication -> ClientLibrary : add statements to transaction
+ClientLibrary -> Database : send transaction
+Database -> Database : interpret and execute transaction
+Database --> ClientLibrary : return result
+ClientLibrary --> ClientApplication : return result
+
+@enduml
+
+@startuml use-case-client-connect-to-database.png
+
+Client -> ClientExecutable : start client executable
+ClientExecutable -> ClientLibrary : access client library
+ClientLibrary -> Network : initalization of network
+
+alt connection successful
+	Network -> DatabaseServer : connect to server
+	DatabaseServer --> Network : return connection information
+	Network --> ClientLibrary : return connection information
+else connection not successful
+	Network --> ClientLibrary : connection times out
+end
+
+ClientLibrary --> ClientExecutable : return status
+
+@enduml

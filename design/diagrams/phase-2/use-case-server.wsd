@@ -1,0 +1,63 @@
+@startuml use-case-server-startup-consistency.png
+
+ServerEnvironment -> DatabaseExecutable : start DatabaseServer
+DatabaseExecutable -> Datastore : verify size of datastore
+alt problem detected
+	Datastore --> DatabaseExecutable : return size
+	alt Datastore size isn't consistent
+		DatabaseExecutable -> Datastore : try to fix
+		Datastore --> DatabaseExecutable : return size of 'fixed' datastore
+		DatabaseExecutable --> DatabaseExecutable : log error
+		alt Datastore can't be fixed
+		DatabaseExecutable --> ServerEnvironment : abort
+	end
+else no problem
+	DatabaseExecutable -> DatabaseExecutable : continue
+end
+
+@enduml
+
+@startuml use-case-server-maintain-data.png
+
+DataController -> Database : pause Client Transactions
+activate PrimaryJournal
+activate PrimaryDatastore
+DataController -> TransitoryJournal : rename primary Journal to transitory Journal
+destroy PrimaryJournal
+activate TransitoryJournal
+DataController -> PrimaryJournal : new Journal as Primary
+activate PrimaryJournal
+DataController -> Database : resume Client Transactions
+DataController -> TransitoryJournal : preprocess Journal
+DataController -> SecondaryDatastore : new Datastore as Secondary Datastore
+activate SecondaryDatastore
+DataController -> SecondaryDatastore : index primary on-disk data
+DataController -> TransitoryJournal : get entries
+TransitoryJournal -> DataController : entries
+DataController -> SecondaryDatastore : apply entries
+DataController -> TransitoryJournal : delete
+destroy TransitoryJournal
+DataController -> SecondaryDatastore : write to disk
+DataController -> TransitoryDatastore : rename Primary Datastore to Transitory Datastore
+destroy PrimaryDatastore
+activate TransitoryDatastore
+DataController -> PrimaryDatastore : rename Seconday Datastore to Primary Datastore
+activate PrimaryDatastore
+destroy SecondaryDatastore
+DataController -> TransitoryDatastore : delete
+destroy TransitoryDatastore
+
+@enduml
+
+@startuml use-case-server-process-statement-backend.png
+
+Client -> Database : send transaction / receive transaction
+Database -> DataController : parse(transaction)
+DataController -> DataController : interpret transaction
+DataController -> Journal : write(DRME event)
+DataController -> Datastore : execute command
+Datastore --> DataController : return result
+DataController --> Database : return result
+Database --> Client : return result
+
+@enduml

@@ -1,0 +1,4 @@
+Database.handleTransaction(transaction)
+	Check the transaction for valid syntax
+	Parse the transaction into statements
+	Parse the statements into commands

@@ -59,44 +59,44 @@
 
 \section[Contributors]{Team member contributions}
 
-We have been meeting every week since the project inception and have heavily collaborated on the overall design of the application. Most of the work on this project was a collaborative effort and it's hard to segregate the responsibilities of the individual team members as much of the work was complete before the official requirements for the design document were available.
+	We have been meeting every week since the project inception and have heavily collaborated on the overall design of the application. Most of the work on this project was a collaborative effort and it's hard to segregate the responsibilities of the individual team members as much of the work was complete before the official requirements for the design document were available.
 
-\begin{description}
-	\item[Ethan Mata] Assisted in design for UML class models, UML state diagrams, essential and real use cases, diagramming and organization of the information in this document.
-	\item[Matt Villarrubia] Assisted in design for UML class models and UML state diagrams.
-	\item[Quentin Lowery] Assisted in design for UML state diagrams, UML class models, collection and formatting of this document. Composed the concept statement.
-	\item[Robert Baldwin] Managed design for all components of the document, composed the Application Class Model, Application State Model, and use cases.
-	\item[Victor Robertson] Coordinated design decisions, managed the technical overview for each section of the document.  Composed the Application Class Model and the basis for the class diagrams.
-\end{description}
+	\begin{description}
+		\item[Ethan Mata] Assisted in design for UML class models, UML state diagrams, essential and real use cases, diagramming and organization of the information in this document.
+		\item[Matt Villarrubia] Assisted in design for UML class models and UML state diagrams.
+		\item[Quentin Lowery] Assisted in design for UML state diagrams, UML class models, collection and formatting of this document. Composed the concept statement.
+		\item[Robert Baldwin] Managed design for all components of the document, composed the Application Class Model, Application State Model, and use cases.
+		\item[Victor Robertson] Coordinated design decisions, managed the technical overview for each section of the document. Composed the Application Class Model and the basis for the class diagrams.
+	\end{description}
 
 \chapter{Domain analysis}
 
 \section{Concept statement}
 
-The goal of this project is to explore the area between complex safe relational databases and fast volatile in-memory databases by implementing a key-value ACID-compliant database with an orthogonal set of commands.
+	The goal of this project is to explore the area between complex safe relational databases and fast volatile in-memory databases by implementing a key-value ACID-compliant database with an orthogonal set of commands.
 
-Multiple clients should be able to interact with the database concurrently through transactions. A client should be able to perform multiple commands in a single transaction and each transaction should provide results for the executed commands.
+	Multiple clients should be able to interact with the database concurrently through transactions. A client should be able to perform multiple commands in a single transaction and each transaction should provide results for the executed commands.
 
-All transactions should be performed atomically, that is to say that multiple statements included in a single transaction either succeed or fail as a whole. Each transaction should be executed without the influence of any other transaction. At no point in time should the data in the database be put into an inconsistent state and if a client is informed of the success of a transaction, the transaction should remain successful even in the event of a loss of power or other external problem.
+	All transactions should be performed atomically, that is to say that multiple statements included in a single transaction either succeed or fail as a whole. Each transaction should be executed without the influence of any other transaction. At no point in time should the data in the database be put into an inconsistent state and if a client is informed of the success of a transaction, the transaction should remain successful even in the event of a loss of power or other external problem.
 
-The data in the database should persist while the database is not in operation. To maintain the success and failure of committed transactions and to maintain consistency, the data should be journaled so that power loss does not cause inconsistent behavior.
+	The data in the database should persist while the database is not in operation. To maintain the success and failure of committed transactions and to maintain consistency, the data should be journaled so that power loss does not cause inconsistent behavior.
 
 \section{Client library domain model}
 
-	\includegraphics[width=\linewidth]{build/phase-1/conceptual-domain-model.png}
+	\includegraphics[width=\linewidth]{build/phase-1/images/conceptual-domain-model.png}
 
 
 \section{Client library state model}
 	
 	\begin{center}
-		\includegraphics[width=0.8\linewidth]{build/phase-1/application-state-client.png}
+		\includegraphics[width=0.8\linewidth]{build/phase-1/images/application-state-client.png}
 	\end{center}
 
 	The Client Library state model has two primary states: Connected and Disconnected. During the Disconnected state, all attempted transactions will fail. Once connected, each transaction will occupy its own distinct state.
 
 \section{Database server state model}
 
-	\includegraphics[width=\linewidth]{build/phase-1/application-state-server.png}
+	\includegraphics[width=\linewidth]{build/phase-1/images/application-state-server.png}
 
 	The server state model has three overall states: Initialization, Operating, and Cleanup. The Initialization state involves verifying the file system integrity, as well as starting the network subsystem to accept client requests. From there, the Operating state will occupy most of the server's execution which has several concurrent internal states. For each new client connection, a distinct state will represent that client. Likewise, the transaction processing state will determine if transactions are able to be processed at any given time. The server also maintains a state for the journal as well. Some of these concurrent states will even cause state transitions in others.
 
@@ -105,7 +105,7 @@ The data in the database should persist while the database is not in operation. 
 \section{Use cases}
 
 	\begin{center}
-		\makebox[\textwidth][c]{\includegraphics[width=0.7\paperwidth]{build/phase-1/use-case.png}}
+		\makebox[\textwidth][c]{\includegraphics[width=0.7\paperwidth]{build/phase-1/images/use-case.png}}
 	\end{center}
 
 	As we are designing a software tool and not an application with a limited, yet well-defined purpose, the number of different use cases is inherently smaller than that of a larger system. The primary purpose for this is to provide orthogonality to the application developer that makes use of this database and associated library. Through thorough discussion we decided on the four core commands the database should accept: get, set, delete, and move. By only using those four commands, we can replicate much higher level functionality without complicating the core program. We did consider adding additional features such as expiration timers for keys, more data types, and additional languages to code the client-side library in, but decided that we should focus on what is possible to design and implement in the limited time we were given. If we are able to implement all of the features described in this design document by the delivery date, this project will be a resounding success.
@@ -127,7 +127,7 @@ The data in the database should persist while the database is not in operation. 
 			& \begin{description}
 				\item Database verifies the size information contained in the file system and the database journal.
 				\item If the database detects that the server was shut down incorrectly, take steps to repair the file system data.
-				\item If the repair process was unnecessary or completed successfully, the server starts normally.  Otherwise, the server terminates with an exception.
+				\item If the repair process was unnecessary or completed successfully, the server starts normally. Otherwise, the server terminates with an exception.
 			\end{description}
 		\end{tabular}
 
@@ -244,7 +244,7 @@ The data in the database should persist while the database is not in operation. 
 	\subsection{Backend Set Statement}
 
 	\begin{description}
-		\item[Summary]  The Database Server sets the value of a key-value pair to a new value, then returns a status code to the client. 
+		\item[Summary] The Database Server sets the value of a key-value pair to a new value, then returns a status code to the client. 
 		\item[Actors] Client Application, Database Server
 		\item[Precondition] The server has processed the client's transaction correctly.
 
@@ -258,8 +258,8 @@ The data in the database should persist while the database is not in operation. 
 			\end{description}
 		\end{tabular}
 
-		\item[Exceptions] None. The preconditions for this use case require valid inputs and are enforced by the prerequisite use case.  The Set operation never fails and always results in a new record being created or previous one overwritten.
-		\item[Postcondition] Client has received a success status code.  The record specified by the transaction has been modified in accordance with the transaction's statements.
+		\item[Exceptions] None. The preconditions for this use case require valid inputs and are enforced by the prerequisite use case. The Set operation never fails and always results in a new record being created or previous one overwritten.
+		\item[Postcondition] Client has received a success status code. The record specified by the transaction has been modified in accordance with the transaction’s statements.
 	\end{description}
 
 	\pagebreak
@@ -281,7 +281,7 @@ The data in the database should persist while the database is not in operation. 
 		\end{tabular}
 
 		\item[Exceptions] None. The preconditions for this use case require valid inputs and are enforced by the prerequisite use case.
-		\item[Postcondition] Client has received a status code indicating the result of the operation.  The record specified by the transaction has been modified in accordance with the transaction's statements if it existed.
+		\item[Postcondition] Client has received a status code indicating the result of the operation. The record specified by the transaction has been modified in accordance with the transaction’s statements if it existed.
 	\end{description}
 
 	\pagebreak
@@ -358,7 +358,7 @@ Client Library returns success.
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-connect-to-database-server.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-essential-connect-to-database-server.png}
 		\end{center}
 
 		\item[Exceptions] Client cannot establish a connection to Database Server and returns an error.
@@ -386,7 +386,7 @@ Library returns results to Client
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-all-commands.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-essential-all-commands.png}
 		\end{center}
 
 		\item[Exceptions] Transaction or commit reaches the server with invalid syntax, the database returns an error to the client.
@@ -409,7 +409,7 @@ Database Server returns value associated with the key
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-get-command.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-essential-get-command.png}
 		\end{center}
 
 		\item[Exceptions] Transaction or commit reaches the server, the key cannot be found. The server then returns an error to the client.
@@ -434,7 +434,7 @@ Database Server always returns that the operation succeeded
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-set-command.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-essential-set-command.png}
 		\end{center}
 
 		\item[Exceptions] None
@@ -458,10 +458,10 @@ Database Server returns the number of keys deleted
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-del-command.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-essential-del-command.png}
 		\end{center}
 
-		\item[Exceptions] Transaction or commit reaches the server, the key cannot be found.  The server then returns an error to the client.
+		\item[Exceptions] Transaction or commit reaches the server, the key cannot be found. The server then returns an error to the client.
 		\item[Postcondition] Key/value pair is not in the database.
 	\end{description}
 	
@@ -482,10 +482,10 @@ Otherwise, the Database Server returns that the operation failed
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-move-command.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-essential-move-command.png}
 		\end{center}
 
-		\item[Exceptions] Transaction or commit reaches the server, the key cannot be found.  The server then returns an error to the client.
+		\item[Exceptions] Transaction or commit reaches the server, the key cannot be found. The server then returns an error to the client.
 		\item[Postcondition] If the key/value pair exists, then the key name is changed.
 	\end{description}
 
@@ -509,10 +509,10 @@ Otherwise, the server terminates with an error
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=0.7\linewidth]{build/phase-1/use-case-essential-graceful-recovery-during-startup.png}
+			\includegraphics[width=0.7\linewidth]{build/phase-1/images/use-case-essential-graceful-recovery-during-startup.png}
 		\end{center}
 
-		\item[Exceptions] The file data cannot be repaired.  The Database Server terminates the application.
+		\item[Exceptions] The file data cannot be repaired. The Database Server terminates the application.
 		\item[Postcondition] Database recovers and resumes initialization
 	\end{description}
 
@@ -528,7 +528,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] Client is not connected to Database Server
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-connect-to-database-server.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-concrete-connect-to-database-server.png}
 		\end{center}
 
 		\item[Exceptions] Client cannot connect to the Database Server, and receives an error code.
@@ -545,7 +545,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] Database Context has valid connection to Database Server
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-library-process-transaction.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-concrete-library-process-transaction.png}
 		\end{center}
 
 		\item[Exceptions] Transaction fails, and the caller receives an error code.
@@ -562,7 +562,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] None
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-cli-process-transaction.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-concrete-cli-process-transaction.png}
 		\end{center}
 
 		\item[Exceptions] None
@@ -579,7 +579,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] The Database Server received a transaction
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-backend-process-transaction.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-concrete-backend-process-transaction.png}
 		\end{center}
 
 		\item[Exceptions] If the transaction is invalid, an error code is returned to the client.
@@ -596,7 +596,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] None
 
 		\begin{center}
-			\makebox[\textwidth][c]{\includegraphics[width=0.8\paperwidth]{build/phase-1/use-case-concrete-maintain-data.png}}
+			\makebox[\textwidth][c]{\includegraphics[width=0.8\paperwidth]{build/phase-1/images/use-case-concrete-maintain-data.png}}
 		\end{center}
 
 		\item[Postcondition] Primary journal has been applied to the hard copy and is now empty
@@ -612,7 +612,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] At least one requested key-value pair exists
 
 		\begin{center}
-			\includegraphics[width=0.8\linewidth]{build/phase-1/use-case-concrete-del-statement.png}
+			\includegraphics[width=0.8\linewidth]{build/phase-1/images/use-case-concrete-del-statement.png}
 		\end{center}
 
 		\item[Exceptions] If no matching pairs exist, an error code is returned to the client.
@@ -629,7 +629,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] A node with the given key exists
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-move-statement.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-concrete-move-statement.png}
 		\end{center}
 
 		\item[Exceptions] If the key-value pair does not exist, an error code is returned to the client.
@@ -646,7 +646,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] A record with the given key exists
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-get-statement.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-concrete-get-statement.png}
 		\end{center}
 
 		\item[Exceptions] If the key-value pair does not exist, an error code is returned to the client.
@@ -665,7 +665,7 @@ Otherwise, the server terminates with an error
 		Note that the Set statement is equivalent to the deletion and then creation of a record node.
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-set-statement.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-concrete-set-statement.png}
 		\end{center}
 
 		\item[Exceptions] If the key-value pair does not exist, it is created.
@@ -682,7 +682,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] The Database Server is not running
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-startup-consistency-verification.png}
+			\includegraphics[width=\linewidth]{build/phase-1/images/use-case-concrete-startup-consistency-verification.png}
 		\end{center}
 
 		\item[Exceptions] If the data cannot be verified, an error is returned.
@@ -694,7 +694,7 @@ Otherwise, the server terminates with an error
 \section{Model}
 
 	\begin{center}
-		\includegraphics[width=\linewidth]{build/phase-1/application-class-model.png}
+		\includegraphics[width=\linewidth]{build/phase-1/images/application-class-model.png}
 	\end{center}
 
 	\pagebreak
@@ -716,9 +716,9 @@ Otherwise, the server terminates with an error
 	\pagebreak
 
 	\subsection{Database Context}
-		\includegraphics[width=\linewidth]{build/phase-1/application-class-state-client-database-context.png}
+		\includegraphics[width=\linewidth]{build/phase-1/images/application-class-state-client-database-context.png}
 	\subsection{Transaction}
-		\includegraphics[width=0.7\linewidth]{build/phase-1/application-class-state-client-transaction.png}
+		\includegraphics[width=0.7\linewidth]{build/phase-1/images/application-class-state-client-transaction.png}
 
 	\pagebreak
 
@@ -727,15 +727,15 @@ Otherwise, the server terminates with an error
 	The Database Server's Database and Data Controller have state. The Database has different operational modes such as a maintenance and operational modes. The Data Controller must maintain the status of their associated files--open or closed.
 
 	\subsection{Database}
-		\includegraphics[width=\linewidth]{build/phase-1/application-class-state-server-database.png}
+		\includegraphics[width=\linewidth]{build/phase-1/images/application-class-state-server-database.png}
 	\subsection{Data Controller}
-		\includegraphics[width=0.8\linewidth]{build/phase-1/application-class-state-server-data-controller.png}
+		\includegraphics[width=0.8\linewidth]{build/phase-1/images/application-class-state-server-data-controller.png}
 	
 \chapter{Review}
 
 \section{Model review}
 
-	For the most part, we are very pleased with how our analysis models describe both the problem and our solution. We, however, feel that the models do not adequately portray the durability and atomicity aspects of the database structure.  Quite simply, it's just not possible to develop a truly concrete sequence diagram because there is always room for the developer to interpret the project requirements. Additionally, we also noted that the multi-threaded nature of our database was likewise not represented in full.  In order to mitigate the impact these limitations will have on our final implementation, we plan to test our software considerably and utilize continous integration during the implementation phase to ensure that these aspects of the program will remain valid.
+	For the most part, we are very pleased with how our analysis models describe both the problem and our solution. We, however, feel that the models do not adequately portray the durability and atomicity aspects of the database structure. Quite simply, it's just not possible to develop a truly concrete sequence diagram because there is always room for the developer to interpret the project requirements. Additionally, we also noted that the multi-threaded nature of our database was likewise not represented in full. In order to mitigate the impact these limitations will have on our final implementation, we plan to test our software considerably and utilize continous integration during the implementation phase to ensure that these aspects of the program will remain valid.
 
 	During the analysis and design phase, we implemented several safeguards to ensure that our finished models were correct, complete, and consistent. In order for an element of the models to be admitted to our group's repository, it was required to have at least one other member of the group approve it. In this way, we ensured that errors were less likely to end up in the final models by increasing the amount of inspection that each piece was subjected to. Additionally, during our weekly meetings, we discussed heavily the technical aspects of our design. To ensure that the analysis and design models are consistent with each other, we cross-referenced the models with each other and ensured that changes in one model were reflected into our others. By adding these safeguards and inspections, our analysis and design models are held to high standards of quality.
 

@@ -1,0 +1,460 @@
+\documentclass[a4paper]{report}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{listings}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+
+\textsc{\LARGE Auburn University}\\[1.5cm]
+
+\textsc{\Large Phase 2}\\[0.5cm]
+
+\HRule \\[0.4cm]
+{ \huge \bfseries AcidDB \\[0.4cm] }
+\HRule \\[1.5cm]
+
+\begin{minipage}{0.5\textwidth}
+	\begin{flushleft} \large
+		\emph{Project Lead:}\\
+		Robert \textsc{Baldwin} \texttt{robbaldwin95@gmail.com}
+	\end{flushleft}
+	\begin{flushleft} \large
+		\emph{Design Lead:}\\
+		Victor \textsc{Robertson} \texttt{vmr0001@auburn.edu}
+	\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.3\textwidth}
+	\begin{flushleft} \large
+		\emph{Software Engineer:}\\
+		Ethan \textsc{Mata} \texttt{mata.ethan@gmail.com}
+	\end{flushleft}
+	\begin{flushleft} \large
+		\emph{Software Engineer:}\\
+		Matt \textsc{Villarrubia} \texttt{mrv0003@auburn.edu}
+	\end{flushleft}
+	\begin{flushleft} \large
+		\emph{Software Engineer:}\\
+		Lowery \textsc{Quentin} \texttt{q@auburn.edu}
+	\end{flushleft}
+\end{minipage}
+
+\vfill
+
+% Bottom of the page
+{\large \today}
+
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+
+\chapter{Preface}
+
+\section[Contributors]{Team member contributions}
+
+	Our group held consistent, weekly meetings throughout the semester. We always met on campus as it allowed us to establish the most productive workflow for our group. Initially we considered using our team meetings as a chance to touch base and plan for the upcoming week, however we quickly realized that we would be more productive if we tackled the objectives of the week at the meetings themselves. We met every week during the semester and added extra meetings as necessary, such as the weeks before major deadlines.
+
+	We worked on this project collaboratively rather than through pure delegation of tasks. Collaboration kept our group the most productive and helped all members working on the project understand as much as possible about the project as a whole. Victor started as the project lead and Rob was initially the design lead, but the two switched roles after the end of Phase One. The two believed they could best contribute to the project by exchanging these roles as a way to mitigate some of the burden of responsibility. The rest of the group assisted the team leads in the completion of the project as a whole, including the development of diagrams, models, designs, and documents.
+
+	Because of this collaboration in the form of weekly meetings, it is difficult to itemize each team member's contribution to the project. We worked together to create the highest quality work we could muster every step of the way. 
+
+\chapter{Architectural Design}
+
+\section{Deployment Diagram}
+
+	\begin{center}
+		\makebox[\textwidth][c]{\includegraphics[width=0.8\paperwidth]{build/phase-2/images/deployment-diagram.png}}
+	\end{center}
+
+	\pagebreak
+
+\section{Architectural Design Style}
+
+	For our architectural design, we decided on a client-server model. Given the fact that our project is, in essence, entirely data management, the client-server model is a natural fit. We have a client which connects to a server through a network in order to perform operations on the server’s data. In this way, we can store all of the data on a single server while allowing multiple clients to access and modify that data concurrently.
+
+	The client-server model has many advantages. First of all, with this model, data is centralized and thus multiple clients will all share identical versions of the data. The centralization is almost synonymous with the use of a network which adds to the modularity of the system as a whole. Adding and upgrading servers requires no client interaction through this mechanism.
+
+	As for disadvantages, because it does not use a shared data model, the clients are required to represent the data in a different form than the server. The translation between these different models and schema may be inefficient. Introducing a network to the system also introduces another point of failure: inability to communicate with the central server will result in a total denial of service.
+
+	\paragraph{Advantages}
+	\begin{enumerate}
+		\item Distribution of data is straightforward
+		\item Makes effective use of networked systems
+		\item Easy to add new servers or upgrade existing servers
+	\end{enumerate}
+
+	\paragraph{Disadvantages}
+	\begin{enumerate}
+		\item Inefficient data translation
+		\item Additional points of failure
+	\end{enumerate}
+
+\chapter{Interaction Design}
+
+\section{Client Library Process Statement}
+
+	\subsection{Sequence Diagram}
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{build/phase-2/images/use-case-client-library-process-statement.png}
+		\end{center}
+
+	\subsection{Collaboration Diagrams}
+
+		From the context of the client library, none of the individual commands in the sequence diagram are complex or warrant collaboration diagrams.
+
+\section{Startup Consistency}
+
+	\subsection{Sequence Diagram}
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{build/phase-2/images/use-case-server-startup-consistency.png}
+		\end{center}
+
+		\pagebreak
+
+	\subsection{Collaboration Diagrams}
+
+		GRASP pattern: Indirection. This pattern applies to both complex operations as the DataController acts as an intermediate entity between the Database and the subsystem which have direct control over the data. If the file storage system were to change, only the intermediate class would need to be changed.
+
+		\subsubsection{Verify file integrity}
+
+			\begin{center}
+				\includegraphics[width=0.6\linewidth]{build/phase-2/images/collab-server-verify-file-integrity.png}
+			\end{center}
+
+		\subsubsection{Attempt to repair file data}
+
+			\begin{center}
+				\includegraphics[width=\linewidth]{build/phase-2/images/collab-server-attempt-to-repair-file-data.png}
+			\end{center}
+
+	\pagebreak
+
+\section{Maintain Data}
+
+	\subsection{Sequence Diagram}
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{build/phase-2/images/use-case-server-maintain-data.png}
+		\end{center}
+
+	\subsection{Collaboration Diagrams}
+
+		\subsubsection{Preprocess journal}
+
+			\begin{center}
+				\includegraphics[width=\linewidth]{build/phase-2/images/collab-server-preprocess-journal.png}
+			\end{center}
+
+			GRASP pattern: Information Expert. DataController delegates the responsibility to Journal as JournalEntries are only accessible to the Journal.
+
+		\subsubsection{Index primary datastore}
+
+			\begin{center}
+				\includegraphics[width=\linewidth]{build/phase-2/images/collab-server-index-primary-datastore.png}
+			\end{center}
+
+			GRASP pattern: Information Expert. The Datastore is the parent class that utilizes the Index and RecordNode classes to complete processes and so DataController must delegate that responsibility to the appropriate class.
+
+		\subsubsection{Apply journal entries}
+
+			\begin{center}
+				\includegraphics[width=0.7\linewidth]{build/phase-2/images/collab-server-apply-entries.png}
+			\end{center}
+
+			GRASP pattern: Information Expert. The process is handled by the Journal class which manages the actual application of the Journal Entries to the Datastore.
+
+		\subsubsection{Pause transactions}
+
+			\begin{center}
+				\includegraphics[width=0.5\textwidth]{build/phase-2/images/collab-server-pause-transactions.png}
+			\end{center}
+
+			GRASP pattern: Information Expert. DataController doesn't have any control over when it executes transactions so it must inform the Database to not allow transactions to be sent during the critical period.
+
+		\subsubsection{Resume transactions}
+
+			\begin{center}
+				\includegraphics[width=0.5\textwidth]{build/phase-2/images/collab-server-resume-transactions.png}
+			\end{center}
+
+			GRASP pattern: Information Expert. DataController doesn't have any control over when it executes transactions so it must inform the Database to allow transactions to be sent after the critical period is over.
+
+	\pagebreak
+
+\section{Process Statement Backend}
+
+	\subsection{Sequence Diagram}
+
+		\begin{center}
+			\includegraphics[width=.6\textwidth]{build/phase-2/images/use-case-server-process-statement-backend.png}
+		\end{center}
+
+	\subsection{Collaboration Diagrams}
+
+		\subsubsection{Interpret command}
+
+			\begin{center}
+				\includegraphics[width=\linewidth]{build/phase-2/images/collab-server-interpret-command.png}
+			\end{center}
+
+			GRASP pattern: Information Expert. The responsibilities are distributed to the classes which are most qualified to access the data required. The Journal does not directly write data, rather, the JournalEntry class writes the changes and so the responsibility is delegated downward.
+
+		\subsubsection{Execute command}
+
+			\begin{center}
+				\includegraphics[width=0.2\linewidth]{build/phase-2/images/collab-server-execute-command.png}
+			\end{center}
+
+			GRASP pattern: Polymorphism. The execute command use case is too broad for a single class. The responsibilities are distributed to different inherited classes which specialize in the processing of specific command types.
+
+	\pagebreak
+
+\section{Connect to Database Client}
+
+	\subsection{Sequence Diagram}
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{build/phase-2/images/use-case-client-connect-to-database.png}
+		\end{center}
+
+	\subsection{Collaboration Diagrams}
+
+		\subsubsection{Connect to server}
+
+			\begin{center}
+				\includegraphics[width=0.7\linewidth]{build/phase-2/images/collab-client-connect-to-server.png}
+			\end{center}
+
+			GRASP pattern: Controller. The process of connecting to the database depends on creating a database context to handle interaction between client and server. The DatabaseContext mitigates that interaction.
+
+\chapter{Design Class Diagram}
+
+	For creational design patterns, the abstract factory pattern most accurately fit with our design goals. As this database implements a class library that provides a set of functions that an application programmer may use for interacting with the database, it seemed appropriate to use abstract factory as it can be used for a class library of products that do not reveal implementation. The client should not need knowledge about what commands are valid or their syntax and only act as a translational layer between the user and the database. Knowledge of the implementation is best hidden on the basis that the backend may change while clients need not. The system (database server) is independent from the client and the transactions the client makes which also fits with the requirements of an Abstract Factory.
+
+	For behavioral design patterns, the command design pattern seemed to be the best choice. As the mechanism of communication between the client and the database server is a transaction, the transaction serves to be a request object. This structure is synonymous with the Command design pattern. These transactions are command sequences that allow for multiple clients to interact with the database server in a safe format.
+
+	For structural design patterns, the bridge pattern best represents how the client library interacts with the client application and the database. In this model, the client library acts as the bridge. This pattern ensures that updates such as bug fixes and changes to syntax can be applied to the database with minimal client interaction thus allowing changes to be implemented on the database side without requiring an update to the client library. As the client does not need to have any knowledge of the syntax of the interaction language or how the database is implemented, only the mechanism the transaction are sent and how results are received, the bridge pattern is a natural fit.
+
+	\section{Client}
+
+		\begin{center}
+			\includegraphics[width=\linewidth]{build/phase-2/images/design-class-diagram-client.png}
+		\end{center}
+
+	\section{Server}
+
+		\begin{center}
+			\makebox[\textwidth][c]{\includegraphics[width=0.65\paperwidth]{build/phase-2/images/design-class-diagram-server.png}}
+		\end{center}
+
+\chapter{Object Design}
+
+\section{Transaction}
+
+	\begin{center}
+		\includegraphics[width=\linewidth]{build/phase-2/images/class-state-client-transaction.png}
+	\end{center}
+
+	\paragraph{commit(DBContext context)}
+		\begin{enumerate}
+			\item Preconditions: Transaction has not been aborted
+			\item Postconditions: Transaction is pending
+			\item Invariant: None
+		\end{enumerate}
+
+	\lstinputlisting{build/phase-2/code/Transaction-commit.pseudocode}
+
+	\paragraph{abort()}
+		\begin{enumerate}
+			\item Preconditions: Transaction has not been committed
+			\item Postconditions: Transaction is no longer valid
+			\item Invariant: None
+		\end{enumerate}
+
+		\pagebreak
+
+\section{Journal}
+
+	\begin{center}
+		\includegraphics[width=0.7\linewidth]{build/phase-2/images/class-state-server-journal.png}
+	\end{center}
+
+	\paragraph{initialize(file source, Integer version)}
+		\begin{enumerate}
+			\item Preconditions: Journal has not been initialized
+			\item Postconditions: Journal is initialized and able to be used
+			\item Invariant: In the context of the Journal there is no invariant.
+		\end{enumerate}
+
+	\paragraph{applyToDatastore(Datastore datastore)}
+		\begin{enumerate}
+			\item Preconditions: Journal is ready to be swapped
+			\item Postconditions: Data has been applied to datastore, journal is empty
+			\item Invariant: The data in the datastore can be determined from the content in the datastore and journal.
+		\end{enumerate}
+
+		\lstinputlisting{build/phase-2/code/Journal-applyToDatastore.pseudocode}
+
+	\paragraph{writeEvent(DRME event)}
+		\begin{enumerate}
+			\item Preconditions: Record exists or is to be created
+			\item Postconditions: Record has been modified
+			\item Invariant: Data in the Journal is consistent
+		\end{enumerate}
+
+	\pagebreak
+
+\section{Datastore}
+
+	\begin{center}
+		\includegraphics[width=0.6\linewidth]{build/phase-2/images/class-state-server-datastore.png}
+	\end{center}
+
+	\paragraph{initialize(file source, boolean shouldCache = true)}
+		\begin{enumerate}
+			\item Preconditions: None
+			\item Postconditions: Datastore is initialized and ready to be written to
+			\item Invariant: The data on disk remains the same.
+		\end{enumerate}
+
+	\paragraph{getRecord(string key)}
+		\begin{enumerate}
+			\item Preconditions: Record exists
+			\item Postconditions: Datastore has record cached if possible, Caller has record.
+			\item Invariant: Records are available if they exist.
+		\end{enumerate}
+
+	\paragraph{modifyRecord(DRME event)}
+		\begin{enumerate}
+			\item Preconditions: Record exists
+			\item Postconditions: Record has been modified
+			\item Invariant: Database data is equal to the on-disk datastore combined with the journaled changes
+		\end{enumerate}
+
+	\paragraph{verify()}
+		\begin{enumerate}
+			\item Preconditions: None
+			\item Postconditions: Datastore has been verified and is error-free
+			\item Invariant: None
+		\end{enumerate}
+
+		\lstinputlisting{build/phase-2/code/Datastore-verify.pseudocode}
+
+	\pagebreak
+
+\section{Database}
+
+	\begin{center}
+		\makebox[\textwidth][c]{\includegraphics[width=0.55\paperwidth]{build/phase-2/images/class-state-server-database.png}}
+	\end{center}
+
+	\paragraph{initialize(integer externalPort, string filename)}
+		\begin{enumerate}
+			\item Preconditions: None
+			\item Postconditions: Database listening for clients
+			\item Invariant: Data in the database is not modified
+		\end{enumerate}
+
+	\paragraph{listen()}
+		\begin{enumerate}
+			\item Preconditions: Database is initialized
+			\item Postconditions: Database is listening for clients
+			\item Invariant: Database can handle transactions
+		\end{enumerate}
+
+	\paragraph{handleClient()}
+		\begin{enumerate}
+			\item Preconditions: Database is initialized and has heard from client
+			\item Postconditions: Database has a new thread to handle clients
+			\item Invariant: Other clients are unaffected
+		\end{enumerate}
+
+	\paragraph{processTransaction(Transaction transaction)}
+		\begin{enumerate}
+			\item Preconditions: Client has sent a transaction
+			\item Postconditions: Database has processed the transaction and returned a response
+			\item Invariant: Data is consistent
+		\end{enumerate}
+
+		\lstinputlisting{build/phase-2/code/Database-handleTransaction.pseudocode}
+
+	\paragraph{stop()}
+		\begin{enumerate}
+			\item Preconditions: None
+			\item Postconditions: New clients are not accepted, no new transactions are processed
+			\item Invariant: Data is consistent
+		\end{enumerate}
+
+	\paragraph{suspendTransactions()}
+		\begin{enumerate}
+			\item Preconditions: Transactions were not paused
+			\item Postconditions: Database does not process transactions
+			\item Invariant: Transaction execution order is unaffected
+		\end{enumerate}
+	 
+	\paragraph{resumeTransactions()}
+		\begin{enumerate}
+			\item Preconditions: Transactions were paused
+			\item Postconditions: Database processes transactions including those in the queue
+			\item Invariant: All transactions are processed as if the pause never happened
+		\end{enumerate}
+
+	\paragraph{verify()}
+		\begin{enumerate}
+			\item Preconditions: Data files on disk are accessible
+			\item Postconditions: Data is consistent or is stopped forcefully
+			\item Invariant: None
+		\end{enumerate}
+
+	\pagebreak
+
+\section{Client Connection}
+
+	\begin{center}
+		\includegraphics[width=\textwidth]{build/phase-2/images/class-state-server-client-connection.png}
+	\end{center}
+
+	\paragraph{threadEntry()}
+		\begin{enumerate}
+			\item Preconditions: New client connected
+			\item Postconditions: Client has disconnected
+			\item Invariant: Other clients are unaffected
+		\end{enumerate}
+
+	\lstinputlisting{build/phase-2/code/ClientConnection-threadEntry.pseudocode}
+
+	\paragraph{getTransaction()}
+		\begin{enumerate}
+			\item Preconditions: None
+			\item Postconditions: Transaction from client is provided to caller
+			\item Invariant: Client is connected
+		\end{enumerate}
+
+	\pagebreak
+
+\chapter{Evaluation}
+
+	In terms of consistency of the design, we utilized an iterative approach to further refine the level of detail in our designs to create the artifacts necessary to translate directly to implementation. This ensured that with each new iteration of the design process we insured consistency with the creation of our models. However, some of our refinements occurred too early in the process as a result of our domain knowledge and required us to rework some of our earlier models. Through thorough review of our work we validated that each model could be derived from previous artifacts and that those artifacts, in turn, correctly produce further design iterations.
+
+	With regard to quality, we believe that each level of detail of our design is accurate and totally reflects the goal of the project as a whole. Our designs utilize modular and reusable classes and strictly follow an object oriented approach. Each class has a well defined purpose and includes a set of methods that reflects that class’ exact purpose. We utilize tiered hierarchies of responsibility and interaction in the associations of our classes which prevent any single class to become too entangled with the rest of the application. If our design diagrams look too tangled, there is a definitive problem with the design of those classes’ interactions. Based solely on the aesthetics of the class diagrams, we can definitively state that our class interactions do not have that problem. Likewise, the sequence diagrams we have developed also reflect that tiered nature. The only exceptions to this would be the controller classes as they inherently work with multiple independent classes in order to organize their behavior. Even those classes maintain a tight interface that reflects those classes’ purpose.
+
+	On a completeness perspective, our design covers every level of abstraction that we had anticipated prior to implementation. This includes the highest level of detail, i.e machines that run our application and their interactions over a network, all the way down to the lowest level of detail, such as data structures to store the database information, storage size, and potential pitfalls with storage efficiency.
+
+	We fear that, without any prototypes, the application's design is not detailed enough to translate directly to implementation. We believe that's it's almost impossible to develop concrete use cases to the level of detail required to directly translate the design from models to code. Overall, we believe that a different design strategy would have worked better for a project of this nature--specifically one that worked on iterations of the software so that some of the very first artifacts of design yielded working executables.
+
+	The biggest fear of all is that we don't know what we don't know. That's to say that while we believe that we've covered all of the complexities of the application, we'll encounter a situation during implementation that will require a redesign. If this occurs, using the waterfall method, much of our design documents will have to be reworked to reflect the final product. This is an inherent problem with the waterfall process: the rigidity of the design.
+
+	In total, the completeness of the design is open to debate. We believe that we've covered all aspects of the design, but that knowledge can only be had once the entire project, implementation included, is complete.
+
+\end{document}

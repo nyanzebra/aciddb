@@ -1,0 +1,42 @@
+@startuml deployment-diagram.png
+
+skinparam backgroundcolor transparent
+
+ClientLibrary -- Network
+
+Network -- DatabaseExecutable
+
+node ClientApplication <<device>> {
+	
+	folder ClientExecutable {
+	
+		[User interface]
+	
+		folder ClientLibrary {
+			[ProcessStatement]
+			[ConnectToDatabaseClient]
+		}
+	}
+}
+
+cloud Network {
+}
+
+node DatabaseServer <<device>> {
+
+	DatabaseExecutable -- DatabaseFiles : reads and writes
+
+	folder DatabaseExecutable {
+		[ConnectToDatabaseServer]
+		[StartupConsistency]	
+		[MaintainData]
+		[ProcessStatementBackend]
+	}
+
+	folder DatabaseFiles {
+		[Journal]
+		[Database Data]
+	}
+}
+
+@enduml

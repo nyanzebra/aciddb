@@ -1,0 +1,98 @@
+@startuml collab-server-verify-file-integrity.png
+
+hide members
+hide circle
+
+class Database
+class Index
+
+Database-right->Index: 1. check file size
+Database-->DataController: 2.1 (if size does not match stored value)\nSignal that files are corrupted\n2.2 (If size matches) Continue operation.
+
+@enduml
+
+@startuml collab-server-attempt-to-repair-file-data.png
+
+hide members
+hide circle
+
+class Database
+class DataController
+
+Database - DataController: 1. Try to rollback to a safe file\n2.1 (success) Continue operation\n2.2 (failure) Shut down database, log error
+
+@enduml
+
+@startuml collab-server-preprocess-journal.png
+
+left to right direction
+
+object Journal
+object JournalEntry
+object DRME
+
+Journal --> JournalEntry : 1. iterate over entries
+JournalEntry --> DRME : 2. enumerate events
+
+@enduml
+
+@startuml collab-server-index-primary-datastore.png
+
+object Datastore
+object Index
+object RecordNode
+
+Datastore --> Index : 1. createIndex()
+Index --> RecordNode : 2.1 addRecord(Record record) 2.2 removeRecord(integer identifier)
+RecordNode --> RecordHeader : 3.2 identifier
+RecordNode --> RecordBody : 3.1 record
+
+@enduml
+
+@startuml collab-server-apply-entries.png
+
+object Journal
+object RecordNode
+object Datastore
+object JournalEntry
+
+Journal --> Datastore : 1. applyToDatastore(Datastore datastore)
+Journal --> JournalEntry : 2. get all
+JournalEntry --> RecordNode : 3. contains
+
+@enduml
+
+@startuml collab-server-pause-transactions.png
+
+object DataController
+object Database
+
+DataController --> Database : 1. suspendTransactions()
+
+@enduml
+
+@startuml collab-server-resume-transactions.png
+
+object DataController
+object Database
+
+DataController --> Database : 1. resumeTransactions()
+
+@enduml
+
+@startuml collab-server-interpret-command.png
+	
+object Database --> DataController : 1. processTransaction(Transaction transaction)
+DataController -> Journal : 2. processStatement(char[] statement)
+Journal --> JournalEntry : 3. writeEvent(DRME event)
+
+@enduml
+
+@startuml collab-server-execute-command.png
+
+object Datastore
+object DRME
+
+Datastore --> DRME : 1. process()
+
+@enduml

@@ -1,0 +1,9 @@
+Datastore.verify()
+	actual_size = 0
+	predicted_size = database.getSize()
+	for each record r in the database
+		actual_size += r.size
+		success = index.add(r)
+		if not success
+			return false
+	return actual_size == predicted_size
