@@ -1,0 +1,19 @@
+@startuml conceptual-domain-model.png
+
+hide empty methods
+hide empty fields
+
+class Transaction
+
+Datastore "*" -- "*" Record : contains
+
+Journal "1" -- "*" JournalEntry : contains
+
+Database "1" -- "1..2" Datastore : contains
+Database "1" -- "1..2" Journal : contains
+
+Database "1" -- "*" Client : connects to
+
+(Database, Client) .. Transaction : communicate via
+
+@enduml

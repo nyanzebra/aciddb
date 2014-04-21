@@ -1,6 +1,6 @@
-@startuml clientstate.png
+@startuml application-state-client.png
+
 skinparam backgroundColor transparent
-'client state'
 
 [*] -> Disconnected
 Connected --> Disconnected : [Connection terminated]
@@ -28,9 +28,9 @@ state Connected {
 
 @enduml
 
-@startuml serverstate.png
+@startuml application-state-server.png
+
 skinparam backgroundColor transparent
-'server state'
 
 [*] -> Initialization
 Initialization : Verify file integrity
@@ -92,36 +92,3 @@ state Operating {
 }
 
 @enduml
-
-[*] --> Load_Files
-Load_Files : Load journal and database files
-Load_Files --> Log_Error : [Files not loadable or damaged]
-Log_Error : Write error message to Log file
-Log_Error -left-> [*] : [Error logging finished]
-Load_Files --> Wait : [Files loaded]
-Wait : Wait for transactions 
-Wait --> ProcessTransaction : [Transaction received][Journal does not need rotation][System is not pending shutdown]
-Wait --> RotateJournal : [Journal needs rotation][System is not pending shutdown]
-Wait --> [*] : [Shut down signal received]
-
-state ProcessTransaction {
-  [*] --> GetItem
-  GetItem --> VerifyItem
-  VerifyItem --> ExecuteItem : [item is valid instruction]
-  VerifyItem --> [*] : [item is invalid] / Log error in Log file
-  ExecuteItem --> LogChanges : [item has been completed]
-  LogChanges --> GetItem : [Log has been updated]
-}
-
-state RotateJournal {
-  [*] --> Create_File
-  Create_File : do /create transitory file
-  Create_File --> Apply_Changes : File created
-  Apply_Changes : do /apply changes to datastore
-  Apply_Changes --> Swap : all changes applied
-  Swap : do/swap transitory and original files
-  Swap --> Clean_Up : Files have been swapped
-  Clean_Up : do/ Delete original file
-  Clean_Up --> [*] : File has been deleted
-  
-}

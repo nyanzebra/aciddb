@@ -1,0 +1,39 @@
+@startuml application-class-model.png
+
+hide empty methods
+hide empty fields
+
+package DatabaseServer {
+	package DatabaseApplication {
+		class DataController
+
+		class Journal
+
+		class Database
+		
+		class Datastore
+	}
+}
+
+package ClientApplication {
+	package ClientLibrary {
+		class DatabaseContext
+	}
+}
+
+class Statement
+class Result
+class Transaction
+
+Transaction "1" -- "*" Statement
+DatabaseContext "1" -right- "*" Transaction : Generates
+Database "1" -left- "*" Result : Generates
+DatabaseContext "1" -up- "*" Result : Receives
+Database "1" -down- "*" Transaction : Receives
+
+
+Database "1"-down- "1" DataController
+Database "1" -- "1, 2" Journal
+Datastore "1, 2" -- "1" DataController
+
+@enduml

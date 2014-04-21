@@ -1,0 +1,74 @@
+@startuml use-case-essential-all-commands.png
+
+ClientApplication -> DatabaseServer : connect
+ClientApplication -> ClientApplication : create a transaction
+ClientApplication -> ClientApplication : add statements to transaction
+ClientApplication -> DatabaseServer : send Transaction
+DatabaseServer -> DatabaseServer : process Transaction
+DatabaseServer -> ClientApplication : return result
+
+@enduml
+
+@startuml use-case-essential-connect-to-database-server.png
+
+ClientApplication -> DatabaseServer : attempt connection
+alt connection successful
+	DatabaseServer -> ClientApplication : return connection information
+else connection not successful
+	ClientApplication -> ClientApplication : connection times out
+end
+
+@enduml
+
+@startuml use-case-essential-set-command.png
+
+ClientApplication -> ClientApplication : compose statement with key and value
+ClientApplication -> DatabaseServer : send Transaction
+DatabaseServer -> DatabaseServer : delete old record
+DatabaseServer -> DatabaseServer : create new record
+DatabaseServer -> ClientApplication : returns success
+
+@enduml
+
+@startuml use-case-essential-move-command.png
+
+ClientApplication -> ClientApplication : compose statement with old key and new key
+ClientApplication -> DatabaseServer : send Transaction
+DatabaseServer -> DatabaseServer : rename/move key
+DatabaseServer -> ClientApplication : return status
+
+@enduml
+
+@startuml use-case-essential-graceful-recovery-during-startup.png
+
+skinparam backgroundColor transparent
+
+DatabaseServer -> DatabaseServer : initialize
+DatabaseServer -> DatabaseServer : determine if file data is corrupt
+DatabaseServer -> DatabaseServer : attempt to repair file data
+DatabaseServer -> DatabaseServer : log message
+alt repair succeeds
+	DatabaseServer -> DatabaseServer : startup proceeds as normal
+else
+	DatabaseServer -> DatabaseServer : terminate with error
+end
+
+@enduml
+
+@startuml use-case-essential-get-command.png
+
+ClientApplication -> ClientApplication : compose statement with key
+ClientApplication -> DatabaseServer : send Transaction
+DatabaseServer -> DatabaseServer : get record
+DatabaseServer -> ClientApplication : return record with key
+
+@enduml
+
+@startuml use-case-essential-del-command.png
+
+ClientApplication -> ClientApplication : compose statement with key
+ClientApplication -> DatabaseServer : send Transaction
+DatabaseServer -> DatabaseServer : delete record
+DatabaseServer -> ClientApplication : return success
+
+@enduml

@@ -1,19 +1,7 @@
-@startuml
-skinparam backgroundColor transparent
-'Transaction'
-[*] --> Uncommitted
-Uncommitted --> Pending : [Transaction::commit()]
-Uncommitted --> Aborted : [Transaction::abort()]
-Pending --> Aborted : [commit fails]
-Aborted --> [*]
-Pending --> Committed : [commit succeeds]
-Committed --> [*]
+@startuml application-class-state-client-database-context.png
 
-@enduml
-
-@startuml
 skinparam backgroundColor transparent
-'Database Context'
+
 [*] --> Disconnected
 Disconnected --> Connected : [connection established]
 Disconnected --> [*] : [program terminates]
@@ -28,9 +16,24 @@ Connected : Transactions can be sent
 
 @enduml
 
-@startuml
+@startuml application-class-state-client-transaction.png
+
 skinparam backgroundColor transparent
-'Database'
+
+[*] --> Uncommitted
+Uncommitted --> Pending : [Transaction::commit()]
+Uncommitted --> Aborted : [Transaction::abort()]
+Pending --> Aborted : [commit fails]
+Aborted --> [*]
+Pending --> Committed : [commit succeeds]
+Committed --> [*]
+
+@enduml
+
+@startuml application-class-state-server-database.png
+
+skinparam backgroundColor transparent
+
 [*] -> Initialization
 Initialization : Opening resource handles
 Initialization : Verifing file integrity
@@ -55,29 +58,11 @@ Maintenance --> Cleanup : [critical error]
 
 @enduml
 
-@startuml
+
+@startuml application-class-state-server-data-controller.png
+
 skinparam backgroundColor transparent
-'Client Connection'
-[*]->Connected : [created with valid connection]
-Disconnected --> Connected : [connect() and successfully connected]
-Connected --> Disconnected : [disconnect() or connection severed]
-Disconnected -> [*]
 
-@enduml
-
-@startuml
-skinparam backgroundColor transparent
-'Network'
-[*] -> Disconnected
-Disconnected --> Connected : [connect() and successfully connected]
-Connected --> Disconnected : [disconnect() or connection severed]
-Disconnected -> [*]
-
-@enduml
-
-@startuml
-skinparam backgroundColor transparent
-'Data Controller'
 [*] -> Closed
 Opened --> Closed : [close() or files cannot be opened]
 Closed --> Opened : [files opened succesfully]

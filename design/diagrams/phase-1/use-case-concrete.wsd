@@ -1,0 +1,145 @@
+@startuml use-case-concrete-connect-to-database-server.png
+
+ClientApplication -> DatabaseContext : create DatabaseContext with address
+DatabaseContext -> Network : connect(address)
+alt Connection Succeeded
+	Network -> Network : connection successful
+	Network -> DatabaseContext : return success
+else Connection Failed
+	Network -> Network : connection failed
+	Network -> DatabaseContext : return failure
+end
+DatabaseContext -> ClientApplication : return status
+
+@enduml
+
+@startuml use-case-concrete-library-process-transaction.png
+
+ClientApplication -> Transaction : create Transaction
+ClientApplication -> Transaction : add(statement)
+Transaction -> ClientApplication :
+ClientApplication -> Transaction : commit()
+Transaction -> DatabaseContext : commit(self)
+DatabaseContext -> DatabaseContext : serialize(transaction)
+DatabaseContext -> Network : send(transaction)
+Network -> DatabaseServer : send(data)
+DatabaseServer -> DatabaseServer : process(transaction)
+DatabaseServer -> Network : return result
+Network -> DatabaseContext : return result
+DatabaseContext -> Transaction : return result
+Transaction -> ClientApplication : return result
+
+@enduml
+
+@startuml use-case-concrete-cli-process-transaction.png
+
+loop until client terminates program
+	User -> CLIApplication : type statement
+	CLIApplication -> CLIApplication : invoke Library Process Transaction sequence
+	CLIApplication -> User : return data 
+end
+
+@enduml
+
+@startuml use-case-concrete-backend-process-transaction.png
+
+ClientLibrary -> DatabaseServer : send(transaction)
+loop for each statement in transaction
+    DatabaseServer -> DatabaseServer : process(statement)
+    alt TransactionSucceeds
+        DatabaseServer -> ClientLibrary : return result
+    else TransactionFails
+        DatabaseServer -> ClientLibrary : return error
+    end
+end
+@enduml
+
+@startuml use-case-concrete-maintain-data.png
+
+DatabaseExecutable -> Database : pause Client Transactions
+activate PrimaryJournal
+activate PrimaryDatastore
+DatabaseExecutable -> TransitoryJournal : rename primary Journal to transitory Journal
+destroy PrimaryJournal
+activate TransitoryJournal
+DatabaseExecutable -> PrimaryJournal : new Journal as Primary
+activate PrimaryJournal
+DatabaseExecutable -> Database : resume Client Transactions
+DatabaseExecutable -> TransitoryJournal : preprocess Journal
+DatabaseExecutable -> SecondaryDatastore : new Datastore as Secondary Datastore
+activate SecondaryDatastore
+DatabaseExecutable -> SecondaryDatastore : index primary on-disk data
+DatabaseExecutable -> TransitoryJournal : get entries
+TransitoryJournal -> DatabaseExecutable : entries
+DatabaseExecutable -> SecondaryDatastore : apply entries
+DatabaseExecutable -> TransitoryJournal : delete
+destroy TransitoryJournal
+DatabaseExecutable -> SecondaryDatastore : write to disk
+DatabaseExecutable -> TransitoryDatastore : rename Primary Datastore to Transitory Datastore
+destroy PrimaryDatastore
+activate TransitoryDatastore
+DatabaseExecutable -> PrimaryDatastore : rename Seconday Datastore to Primary Datastore
+activate PrimaryDatastore
+destroy SecondaryDatastore
+DatabaseExecutable -> TransitoryDatastore : delete
+DatabaseExecutable -> Database : resume Client Transactions
+destroy TransitoryDatastore
+
+@enduml
+
+@startuml use-case-concrete-del-statement.png
+
+note over Database
+	note that this sequence is recurive
+end note
+loop for each Child Node
+	Database -> Database: delete Child Node
+end
+Database -> Database: delete Node (non-recursive)
+alt if Parent has no Child Node
+	Database -> Database: delete Parent Node
+end
+
+@enduml
+
+@startuml use-case-concrete-move-statement.png
+
+Database -> Database: remove Child Node from old Parent
+Database -> Database: add Child Node to new Parent
+
+@enduml
+
+@startuml use-case-concrete-set-statement.png
+
+Database -> Database: invoke delete use case on old data
+Database -> Database: get new Datastore Object Id (DOI)
+Database -> Database: creating Record in memory with DOI and Datastore Object Type (DOT)
+Database -> Database: set Parent to parameterized Parent Node ID
+
+@enduml
+
+@startuml use-case-concrete-get-statement.png
+
+alt if RecordBody is in Index
+	Datastore -> Caller: return RecordBody from Index
+else Record is not in Index
+	Datastore -> Disk: readRecordFromSource()
+	Disk -> Datastore: return Record
+	Datastore -> Datastore: associate body with indexed record if it exists
+	Datastore -> Caller: return RecordBody if it exists
+end
+
+@enduml
+
+@startuml use-case-concrete-startup-consistency-verification.png
+
+System -> Database: start
+Database -> Datastore: verify()
+Database -> Journal: compare index
+alt verify() returns false or indexing fails
+	Database -> System: terminate program with error
+else
+	Database -> Database: continue to listen to clients
+end
+
+@enduml
