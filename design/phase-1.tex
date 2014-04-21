@@ -137,7 +137,7 @@ The data in the database should persist while the database is not in operation. 
 				\item The failure is noted in the log and a message is provided to the user with an explanation.
 				\item The server is terminated.
 			\end{enumerate}
-		\item[Postcondition] The server’s data is consistent and it is able to accept clients for transactions.
+		\item[Postcondition] The server's data is consistent and it is able to accept clients for transactions.
 	\end{description}
 
 	\pagebreak
@@ -224,7 +224,7 @@ The data in the database should persist while the database is not in operation. 
 	\begin{description}
 		\item[Summary] The Database Server returns the value of a key-value pair with the given key to the client.
 		\item[Actors] Client Application, Database Server
-		\item[Precondition] The server has processed the client’s transaction correctly.
+		\item[Precondition] The server has processed the client's transaction correctly.
 
 		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
 			User Intention: & System Responsibility: \\ \hline
@@ -246,7 +246,7 @@ The data in the database should persist while the database is not in operation. 
 	\begin{description}
 		\item[Summary]  The Database Server sets the value of a key-value pair to a new value, then returns a status code to the client. 
 		\item[Actors] Client Application, Database Server
-		\item[Precondition] The server has processed the client’s transaction correctly.
+		\item[Precondition] The server has processed the client's transaction correctly.
 
 		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
 			User Intention: & System Responsibility: \\ \hline
@@ -259,7 +259,7 @@ The data in the database should persist while the database is not in operation. 
 		\end{tabular}
 
 		\item[Exceptions] None. The preconditions for this use case require valid inputs and are enforced by the prerequisite use case.  The Set operation never fails and always results in a new record being created or previous one overwritten.
-		\item[Postcondition] Client has received a success status code.  The record specified by the transaction has been modified in accordance with the transaction’s statements.
+		\item[Postcondition] Client has received a success status code.  The record specified by the transaction has been modified in accordance with the transaction's statements.
 	\end{description}
 
 	\pagebreak
@@ -269,19 +269,19 @@ The data in the database should persist while the database is not in operation. 
 	\begin{description}
 		\item[Summary] The Database Server changes the name of the key-value pair with the given key and returns a status code to the client.
 		\item[Actors] Client Application, Database Server
-		\item[Precondition] The server has processed the client’s transaction correctly.
+		\item[Precondition] The server has processed the client's transaction correctly.
 
 		\begin{tabular}{ p{0.4\linewidth} || p{0.4\linewidth} }
 			User Intention: & System Responsibility: \\ \hline
 			& \begin{description}
 				\item Server retrieves the specified records from the database.
-				\item If the requested record exists, modify the record’s key and associated record keys with the new location specified by the transaction statement.
+				\item If the requested record exists, modify the record's key and associated record keys with the new location specified by the transaction statement.
 				\item Otherwise, return a status code indicating failure.
 			\end{description}
 		\end{tabular}
 
 		\item[Exceptions] None. The preconditions for this use case require valid inputs and are enforced by the prerequisite use case.
-		\item[Postcondition] Client has received a status code indicating the result of the operation.  The record specified by the transaction has been modified in accordance with the transaction’s statements if it existed.
+		\item[Postcondition] Client has received a status code indicating the result of the operation.  The record specified by the transaction has been modified in accordance with the transaction's statements if it existed.
 	\end{description}
 
 	\pagebreak
@@ -398,7 +398,7 @@ Library returns results to Client
 	\subsection{Get statement}
 
 	\begin{description}
-		\item[Summary] The server receives a ‘get’ statement, and returns the value associated with the given key.
+		\item[Summary] The server receives a 'get' statement, and returns the value associated with the given key.
 		\item[Actors] Client Application, Database Server
 		\item[Precondition] Client is connected to Database Server
 		\item[Scenarios] :
@@ -422,7 +422,7 @@ Database Server returns value associated with the key
 	\subsection{Set statement}
 
 	\begin{description}
-		\item[Summary] The server receives a ‘set’ statement, and creates the given key/value pair if it does not already exist.
+		\item[Summary] The server receives a 'set' statement, and creates the given key/value pair if it does not already exist.
 		\item[Actors] Client Application, Database Server
 		\item[Precondition] Client is connected to Database Server
 		\item[Scenarios] :
@@ -446,7 +446,7 @@ Database Server always returns that the operation succeeded
 	\subsection{Delete statement}
 
 	\begin{description}
-		\item[Summary] The server receives a ‘delete’ statement, and attempts to remove all key/value pairs with the given key.
+		\item[Summary] The server receives a 'delete' statement, and attempts to remove all key/value pairs with the given key.
 		\item[Actors] Client Application, Database Server
 		\item[Precondition] Client is connected to Database Server
 		\item[Scenarios] :
@@ -470,7 +470,7 @@ Database Server returns the number of keys deleted
 	\subsection{Move statement}
 
 	\begin{description}
-		\item[Summary] The server receives a ‘move’ statement, and changes the key name of a key/value pair.
+		\item[Summary] The server receives a 'move' statement, and changes the key name of a key/value pair.
 		\item[Actors] Client Application, Database Server
 		\item[Precondition] Client is connected to Database Server 
 		\item[Scenarios] :
@@ -623,8 +623,6 @@ Otherwise, the server terminates with an error
 
 	\subsection{Backend Move Statement}
 
-	Note that the 
-
 	\begin{description}
 		\item[Summary] The Database Server changes the name of the node with the given key
 		\item[Actors] Database Server
@@ -713,7 +711,7 @@ Otherwise, the server terminates with an error
 
 \section{Client library state classes}
 
-	The library’s Database Context and Transaction classes have state. The state maintained by the Database Context is whether or not the client is connected and whether or not the context is in an error state. The Transaction class’ state is whether or not the Transaction has been committed or pending. Transition between these multiple concurrent states are triggered by changes in associated objects. For example, if a Transaction moves to the pending state but then fails to commit, it is moved to the uncommitted state and also triggers the Database Context to move to the error state.
+	The library's Database Context and Transaction classes have state. The state maintained by the Database Context is related to whether or not the client is connected and whether or not the context is in an error state. The Transaction class' state is either committed, pending or aborted. Transition between these multiple concurrent states are triggered by changes in associated objects. For example, if a Transaction moves to the pending state but then fails to commit, it is moved to the uncommitted state and also triggers the Database Context to move to the error state.
 
 	\pagebreak
 
@@ -726,7 +724,7 @@ Otherwise, the server terminates with an error
 
 \section{Database server state classes}
 
-	The Database Server’s Database and Data Controller have state. The Database has different operational modes such as a maintenance and operational modes. The Data Controller must maintain the status of their associated files--open or closed.
+	The Database Server's Database and Data Controller have state. The Database has different operational modes such as a maintenance and operational modes. The Data Controller must maintain the status of their associated files--open or closed.
 
 	\subsection{Database}
 		\includegraphics[width=\linewidth]{build/phase-1/application-class-state-server-database.png}
