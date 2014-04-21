@@ -25,3 +25,8 @@ Creating New Diagrams
 =====================
 
 Please refer to the PlantUML (language documentation)[http://plantuml.sourceforge.net/download.html]
+
+Compiling the Phase 1 and Phase 2 deliverables
+==============================================
+
+Use the makefile included in this folder.  Valid targets are all, phase-1, phase-2, and others described in the makefile.

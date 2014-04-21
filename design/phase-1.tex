@@ -23,7 +23,7 @@
 \begin{minipage}{0.5\textwidth}
 	\begin{flushleft} \large
 		\emph{Project Lead:}\\
-		Victor \textsc{Robertson} \texttt{vmrob@auburn.edu}
+		Victor \textsc{Robertson} \texttt{vmr0001@auburn.edu}
 	\end{flushleft}
 	\begin{flushleft} \large
 		\emph{Design Lead:}\\
@@ -59,12 +59,12 @@
 
 \section[Contributors]{Team member contributions}
 
-We have been meeting every week since the project inception and have heavily collaborated on the overall design of the application.  Most of the work on this project was a collaborative effort and it's hard to segregate the responsibilities of the individual team members as much of the work was complete before the official requirements for the design document were available.
+We have been meeting every week since the project inception and have heavily collaborated on the overall design of the application. Most of the work on this project was a collaborative effort and it's hard to segregate the responsibilities of the individual team members as much of the work was complete before the official requirements for the design document were available.
 
 \begin{description}
 	\item[Ethan Mata] Assisted in design for UML class models, UML state diagrams, essential and real use cases, diagramming and organization of the information in this document.
 	\item[Matt Villarrubia] Assisted in design for UML class models and UML state diagrams.
-	\item[Quentin Lowery] Assisted in design for UML state diagrams, UML class models, collection and formatting of this document.  Composed the concept statement.
+	\item[Quentin Lowery] Assisted in design for UML state diagrams, UML class models, collection and formatting of this document. Composed the concept statement.
 	\item[Robert Baldwin] Managed design for all components of the document, composed the Application Class Model, Application State Model, and use cases.
 	\item[Victor Robertson] Coordinated design decisions, managed the technical overview for each section of the document.  Composed the Application Class Model and the basis for the class diagrams.
 \end{description}
@@ -73,37 +73,30 @@ We have been meeting every week since the project inception and have heavily col
 
 \section{Concept statement}
 
-	To provide assurance that database transactions are not affected by failures, there exists a set of properties that guarantee that database transactions are processed reliably. These properties are known as ACID. ACID stands for atomic, consistent, isolated, and durable. Atomicity is the property that any transaction will either entirely succeed or entirely fail. To the outside world transactions appear to be indivisible. Consistency ensures that all transactions will bring the database into a valid state. Isolation means that the concurrent execution of transactions will lead to a state that would be obtained as though the transactions were executed sequentially. Durability is the property that once a transaction is committed it will stay committed, even if there is power loss or if there are other external problems. Our database will have transactions that uphold these properties without adding the complexity of larger databases.
+The goal of this project is to explore the area between complex safe relational databases and fast volatile in-memory databases by implementing a key-value ACID-compliant database with an orthogonal set of commands.
 
-	Our goal is to explore the area between complex ACID-compliant databases and fast in-memory databases. In order to do this, the database server should exist as a program that keeps data on disk and should be accessible through a network. The data’s state in the database should only be interacted with through ACID-compliant transactions.
+Multiple clients should be able to interact with the database concurrently through transactions. A client should be able to perform multiple commands in a single transaction and each transaction should provide results for the executed commands.
 
-	There should also be a library for c++ to allow other clients to interact with our server. The library should include database commands and the ability to automatically execute commands. A terminal interface should be included, programmed with the c++ library and the commands for the database.
+All transactions should be performed atomically, that is to say that multiple statements included in a single transaction either succeed or fail as a whole. Each transaction should be executed without the influence of any other transaction. At no point in time should the data in the database be put into an inconsistent state and if a client is informed of the success of a transaction, the transaction should remain successful even in the event of a loss of power or other external problem.
+
+The data in the database should persist while the database is not in operation. To maintain the success and failure of committed transactions and to maintain consistency, the data should be journaled so that power loss does not cause inconsistent behavior.
 
 \section{Client library domain model}
 
-	\includegraphics[width=\linewidth]{class-diagrams/client-classes.png}
+	\includegraphics[width=\linewidth]{build/phase-1/conceptual-domain-model.png}
 
-	The client library is, by design, minimal and, as such, does not have many classes or complex behavior.  At the most, the classes in the client library are wrappers for a developer to communicate with the database server.
-
-\newpage
-
-\section{Database server domain model}
-
-	\begin{center}
-		\makebox[\textwidth][c]{\includegraphics[width=0.8\paperwidth]{class-diagrams/server-classes.png}}
-	\end{center}
 
 \section{Client library state model}
 	
 	\begin{center}
-		\includegraphics[width=0.8\linewidth]{state-diagrams/uml-client-state.png}
+		\includegraphics[width=0.8\linewidth]{build/phase-1/application-state-client.png}
 	\end{center}
 
 	The Client Library state model has two primary states: Connected and Disconnected. During the Disconnected state, all attempted transactions will fail. Once connected, each transaction will occupy its own distinct state.
 
 \section{Database server state model}
 
-	\includegraphics[width=\linewidth]{state-diagrams/uml-server-state.png}
+	\includegraphics[width=\linewidth]{build/phase-1/application-state-server.png}
 
 	The server state model has three overall states: Initialization, Operating, and Cleanup. The Initialization state involves verifying the file system integrity, as well as starting the network subsystem to accept client requests. From there, the Operating state will occupy most of the server's execution which has several concurrent internal states. For each new client connection, a distinct state will represent that client. Likewise, the transaction processing state will determine if transactions are able to be processed at any given time. The server also maintains a state for the journal as well. Some of these concurrent states will even cause state transitions in others.
 
@@ -112,7 +105,7 @@ We have been meeting every week since the project inception and have heavily col
 \section{Use cases}
 
 	\begin{center}
-		\makebox[\textwidth][c]{\includegraphics[width=0.7\paperwidth]{use-case-diagram/use-case-diagram.png}}
+		\makebox[\textwidth][c]{\includegraphics[width=0.7\paperwidth]{build/phase-1/use-case.png}}
 	\end{center}
 
 	As we are designing a software tool and not an application with a limited, yet well-defined purpose, the number of different use cases is inherently smaller than that of a larger system. The primary purpose for this is to provide orthogonality to the application developer that makes use of this database and associated library. Through thorough discussion we decided on the four core commands the database should accept: get, set, delete, and move. By only using those four commands, we can replicate much higher level functionality without complicating the core program. We did consider adding additional features such as expiration timers for keys, more data types, and additional languages to code the client-side library in, but decided that we should focus on what is possible to design and implement in the limited time we were given. If we are able to implement all of the features described in this design document by the delivery date, this project will be a resounding success.
@@ -365,7 +358,7 @@ Client Library returns success.
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-connect-to-database-server.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-connect-to-database-server.png}
 		\end{center}
 
 		\item[Exceptions] Client cannot establish a connection to Database Server and returns an error.
@@ -393,7 +386,7 @@ Library returns results to Client
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-all-commands.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-all-commands.png}
 		\end{center}
 
 		\item[Exceptions] Transaction or commit reaches the server with invalid syntax, the database returns an error to the client.
@@ -416,7 +409,7 @@ Database Server returns value associated with the key
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-get-command.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-get-command.png}
 		\end{center}
 
 		\item[Exceptions] Transaction or commit reaches the server, the key cannot be found. The server then returns an error to the client.
@@ -441,7 +434,7 @@ Database Server always returns that the operation succeeded
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-set-command.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-set-command.png}
 		\end{center}
 
 		\item[Exceptions] None
@@ -465,7 +458,7 @@ Database Server returns the number of keys deleted
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-delete-command.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-del-command.png}
 		\end{center}
 
 		\item[Exceptions] Transaction or commit reaches the server, the key cannot be found.  The server then returns an error to the client.
@@ -489,7 +482,7 @@ Otherwise, the Database Server returns that the operation failed
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/essential-sequences-move-command.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-essential-move-command.png}
 		\end{center}
 
 		\item[Exceptions] Transaction or commit reaches the server, the key cannot be found.  The server then returns an error to the client.
@@ -516,12 +509,14 @@ Otherwise, the server terminates with an error
 		\end{lstlisting}
 
 		\begin{center}
-			\includegraphics[width=0.7\linewidth]{sequence-diagrams/essential-sequences-graceful-recovery.png}
+			\includegraphics[width=0.7\linewidth]{build/phase-1/use-case-essential-graceful-recovery-during-startup.png}
 		\end{center}
 
 		\item[Exceptions] The file data cannot be repaired.  The Database Server terminates the application.
 		\item[Postcondition] Database recovers and resumes initialization
 	\end{description}
+
+	\pagebreak
 	
 \section{Concrete use cases}
 
@@ -533,7 +528,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] Client is not connected to Database Server
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-connect-to-database.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-connect-to-database-server.png}
 		\end{center}
 
 		\item[Exceptions] Client cannot connect to the Database Server, and receives an error code.
@@ -550,7 +545,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] Database Context has valid connection to Database Server
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-library-process-transaction.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-library-process-transaction.png}
 		\end{center}
 
 		\item[Exceptions] Transaction fails, and the caller receives an error code.
@@ -567,7 +562,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] None
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-cli-process-transaction.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-cli-process-transaction.png}
 		\end{center}
 
 		\item[Exceptions] None
@@ -584,7 +579,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] The Database Server received a transaction
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-backend-process-transaction.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-backend-process-transaction.png}
 		\end{center}
 
 		\item[Exceptions] If the transaction is invalid, an error code is returned to the client.
@@ -601,7 +596,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] None
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-maintain-data.png}
+			\makebox[\textwidth][c]{\includegraphics[width=0.8\paperwidth]{build/phase-1/use-case-concrete-maintain-data.png}}
 		\end{center}
 
 		\item[Postcondition] Primary journal has been applied to the hard copy and is now empty
@@ -617,7 +612,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] At least one requested key-value pair exists
 
 		\begin{center}
-			\includegraphics[width=0.8\linewidth]{sequence-diagrams/datastore-process-delete-sequence.png}
+			\includegraphics[width=0.8\linewidth]{build/phase-1/use-case-concrete-del-statement.png}
 		\end{center}
 
 		\item[Exceptions] If no matching pairs exist, an error code is returned to the client.
@@ -636,7 +631,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] A node with the given key exists
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/datastore-process-move-sequence.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-move-statement.png}
 		\end{center}
 
 		\item[Exceptions] If the key-value pair does not exist, an error code is returned to the client.
@@ -653,7 +648,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] A record with the given key exists
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/datastore-get-record-sequence.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-get-statement.png}
 		\end{center}
 
 		\item[Exceptions] If the key-value pair does not exist, an error code is returned to the client.
@@ -672,10 +667,7 @@ Otherwise, the server terminates with an error
 		Note that the Set statement is equivalent to the deletion and then creation of a record node.
 
 		\begin{center}
-			\includegraphics[width=0.6\linewidth]{sequence-diagrams/datastore-process-delete-sequence.png}
-		\end{center}
-		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/datastore-process-create-sequence.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-set-statement.png}
 		\end{center}
 
 		\item[Exceptions] If the key-value pair does not exist, it is created.
@@ -692,7 +684,7 @@ Otherwise, the server terminates with an error
 		\item[Precondition] The Database Server is not running
 
 		\begin{center}
-			\includegraphics[width=\linewidth]{sequence-diagrams/concrete-sequences-startup-consistency.png}
+			\includegraphics[width=\linewidth]{build/phase-1/use-case-concrete-startup-consistency-verification.png}
 		\end{center}
 
 		\item[Exceptions] If the data cannot be verified, an error is returned.
@@ -701,99 +693,13 @@ Otherwise, the server terminates with an error
 
 \chapter{Application class model}
 
-\section{Interface}
+\section{Model}
 
-	As the application we’re developing is a library for other developers to utilize, our interface differs from tradition in the sense that the library classes and usage is the interface. As such, the interface is designed to utilize modern c++ idioms including Resource Acquisition Is Initialization (RAII), type safety, and the usage of templates to reduce overhead costs. Our classes are designed to look and feel like classes from the Standard Template Library (STL) and thus developers familiar with them should feel right at home.
+	\begin{center}
+		\includegraphics[width=\linewidth]{build/phase-1/application-class-model.png}
+	\end{center}
 
-	The interface should be minimal and be mostly independent of the actual statement logic as the server and supported commands may improve over time. The client application, the protocol, and the client libraries shouldn’t, in most cases, have to be updated as the result of something such as the addition of a new command. The client library should act as an intermediary between the client application and the server and perform no actions other than translating the command statements and returning results from those statements.
-
-	\begin{lstlisting}
-#include <iostream>
-#include <aciddb>
-
-int main() {
-
-  // RAII context
-  acid::Context context("localhost:2500");
-  
-  {
-	// with read only transactions, there's no need
-	// to commit anything.
-	acid::Transaction transaction(context
-	    , acid::ReadOnly);
-
-	acid::Record users = transaction.get("users", {
-	  "victor",
-	  "rob",
-	  "ethan"
-	});
-
-	for (auto& u : users) {
-	  if (!u) {
-		std::cout << u << " does not exist" << std::endl;
-	  }
-
-	  std::cout << u["handle"].as<std::string>()
-				<< std::endl;
-	}
-	// transaction aborted by default.
-	// For read only, this means nothing.
-  }
-  
-  {
-	// write transactions can read data, but can only hold
-	// a lock on a single get request at once
-	acid::Transaction transaction(context);
-
-	acid::Record users
-	  = transaction.get("users", {"victor", "rob"});
-
-	if (users["victor"]) {
-	  // committing a transaction is exactly the
-	  // same as aborting it if no writes were made.
-	  // Committing the transaction early allows
-	  // for the client application to release any
-	  // locks it holds with the server. if nothing
-	  // happened, does not invalidate existing records
-	  transaction.commit();
-	  std::cout
-		<< users["victor"]["name"].as<std::string>() << std::endl
-		<< users["victor"]["handle"].as<std::string>() << std::endl
-		<< users["victor"]["age"].as<int>() << std::endl
-		<< users["victor"]["email"].as<std::string>() << std::endl
-	  ;
-	} else {
-	  transaction.insert("users", "victor", {
-		{ "name", "victor" },
-		{ "handle", "vmrob" },
-		{ "age", "24" },
-		{ "email", "victor.robertson.iv@gmail.com" }
-	  }).commit();
-	}
-
-	// transaction aborted by default
-  }
-
-  {
-	// deleting records works the same way
-	if (acid::Transaction(context).erase("users", {
-		"victor",
-		"rob"
-	}).commit()) {
-	  std::cout << "success" << std::endl;
-	};
-  }
-
-  {
-	// maybe it should be even easier to use
-	acid::Transaction(context).eraseIf("users"
-		, acid::RegexMatch("name", "expression")).commit();
-
-	acid::Transaction(context, acid::ReadOnly).getIf("users"
-		, acid::RegexMatch("name", "expression")).commit();
-  }
-}
-\end{lstlisting}
+	\pagebreak
 
 \section{Boundary and controller classes}
 
@@ -807,30 +713,26 @@ int main() {
 
 \section{Client library state classes}
 
-	There are several classes that maintain state in the library and server. The library’s Database Context, Transaction, and Network classes all have state. The state maintained by the Database Context is whether or not the client is connected and whether or not the context is in an error state. The Transaction class’ state is whether or not the Transaction has been committed or pending. The Network stores it’s own connected state. Transition between these multiple concurrent states are triggered by changes in associated objects. For example, if a Transaction moves to the pending state but then fails to commit, it is moved to the uncommitted state and also triggers the Database Context to move to the error state.
+	The library’s Database Context and Transaction classes have state. The state maintained by the Database Context is whether or not the client is connected and whether or not the context is in an error state. The Transaction class’ state is whether or not the Transaction has been committed or pending. Transition between these multiple concurrent states are triggered by changes in associated objects. For example, if a Transaction moves to the pending state but then fails to commit, it is moved to the uncommitted state and also triggers the Database Context to move to the error state.
 
-	\includegraphics[width=0.8\linewidth]{class-diagrams/client-classes.png}
+	\pagebreak
 
 	\subsection{Database Context}
-		\includegraphics[width=\linewidth]{state-diagrams/database-context-application-state.png}
+		\includegraphics[width=\linewidth]{build/phase-1/application-class-state-client-database-context.png}
 	\subsection{Transaction}
-		\includegraphics[width=0.7\linewidth]{state-diagrams/transaction-application-state.png}
-	\subsection{Network}
-		\includegraphics[width=\linewidth]{state-diagrams/network-application-state.png}
+		\includegraphics[width=0.7\linewidth]{build/phase-1/application-class-state-client-transaction.png}
+
+	\pagebreak
 
 \section{Database server state classes}
 
-	The Database Server’s Client Connection, Database, Data Controller, and Network also have state. The Client Connection, like the Network class from the client, maintains its own connected state while the Database has different operational modes such as a maintenance mode. The Data Controller must maintain the status of their associated files--open or closed.
+	The Database Server’s Database and Data Controller have state. The Database has different operational modes such as a maintenance and operational modes. The Data Controller must maintain the status of their associated files--open or closed.
 
-	\subsection{Client Connection}
-		\includegraphics[width=\linewidth]{state-diagrams/client-connection-application-state.png}
 	\subsection{Database}
-		\includegraphics[width=\linewidth]{state-diagrams/database-application-state.png}
+		\includegraphics[width=\linewidth]{build/phase-1/application-class-state-server-database.png}
 	\subsection{Data Controller}
-		\includegraphics[width=0.8\linewidth]{state-diagrams/data-controller-application-state.png}
-	\subsection{Network}
-		\includegraphics[width=0.8\linewidth]{state-diagrams/network-application-state.png}
-
+		\includegraphics[width=0.8\linewidth]{build/phase-1/application-class-state-server-data-controller.png}
+	
 \chapter{Review}
 
 \section{Model review}
