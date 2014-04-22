@@ -1,0 +1,78 @@
+@startuml class-state-server-client-connection.png
+
+[*] -> connected : construction
+state connected {
+
+	state processing as "Processing Transaction"
+
+	[*] -> processing : threadEntry()
+	processing -> [*] : client disconnects
+
+}
+connected -> [*] : disconnected
+
+@enduml
+
+@startuml class-state-client-transaction.png
+
+[*] -> uncommitted : construction
+uncommitted -> pending : commit()
+uncommitted --> aborted : abort()
+pending --> aborted : commit() failed
+pending -> committed : commit() succeeds
+committed --> [*] : deconstruction
+aborted -> [*] : deconstruction
+
+@enduml
+
+@startuml class-state-server-database.png
+
+[*] --> initializing : main()
+initializing --> operating : start()
+operating --> terminating : stop()
+initializing --> terminating : [error during verification]
+terminating --> [*] : [program terminates]
+
+state operating {
+
+	state processing as "Processing Transactions"
+	state notProcessing as "Paused"
+
+	[*] --> processing : start()
+
+	processing --> notProcessing : pauseTransactions()
+	notProcessing --> processing : resumeTransactions()
+
+	processing --> [*] : stop()
+
+}
+
+@enduml
+
+@startuml class-state-server-datastore.png
+
+[*] -right-> unopened : construction
+
+opened : processing DRMEs
+opened : rotation possible
+
+unopened -right-> opened : initialize()
+opened --> [*] : deconstruction
+unopened --> [*] : deconstruction
+
+@enduml
+
+
+@startuml class-state-server-journal.png
+
+[*] -right-> unopened : construction
+
+opened : processing DRMEs
+opened : rotation possible
+
+unopened -right-> opened : initialize()
+opened --> [*] : deconstruction
+unopened --> [*] : deconstruction
+
+@enduml
+

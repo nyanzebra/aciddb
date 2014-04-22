@@ -1,0 +1,6 @@
+Transaction.commit(DBContext context)
+	if state != uncommitted
+		error "transaction is not in an uncommitted state"
+	else
+		state = pending
+		return context.commit(this)

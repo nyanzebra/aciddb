@@ -1,0 +1,5 @@
+@startuml collab-client-connect-to-server.png
+
+object ClientLibrary -> DBContext: 1. DBContext(Address server)
+
+@enduml
