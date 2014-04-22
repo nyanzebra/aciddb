@@ -1,5 +1,7 @@
 @startuml class-state-server-client-connection.png
 
+skinparam backgroundcolor transparent
+
 [*] -> connected : construction
 state connected {
 
@@ -15,6 +17,8 @@ connected -> [*] : disconnected
 
 @startuml class-state-client-transaction.png
 
+skinparam backgroundcolor transparent
+
 [*] -> uncommitted : construction
 uncommitted -> pending : commit()
 uncommitted --> aborted : abort()
@@ -26,6 +30,8 @@ aborted -> [*] : deconstruction
 @enduml
 
 @startuml class-state-server-database.png
+
+skinparam backgroundcolor transparent
 
 [*] --> initializing : main()
 initializing --> operating : start()
@@ -51,6 +57,8 @@ state operating {
 
 @startuml class-state-server-datastore.png
 
+skinparam backgroundcolor transparent
+
 [*] -right-> unopened : construction
 
 opened : processing DRMEs
@@ -64,6 +72,8 @@ unopened --> [*] : deconstruction
 
 
 @startuml class-state-server-journal.png
+
+skinparam backgroundcolor transparent
 
 [*] -right-> unopened : construction
 
