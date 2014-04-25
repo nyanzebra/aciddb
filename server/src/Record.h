@@ -5,11 +5,15 @@
 #include <string>
 #include <exception>
 
-enum class RecordType {
-	kAssocArray,
-	kArray,
-	kString,
-	kUndefined,
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/vector.hpp>
+
+enum class RecordType : uint8_t {
+	kUndefined	= 0x0,
+	kAssocArray	= 0x1,
+	kArray		= 0x2,
+	kString		= 0x3,
 };
 
 inline constexpr const char* RecordTypeStr(RecordType type) {
@@ -29,7 +33,7 @@ class RecordException : public std::runtime_error {
 class Record {
 public:
 	Record() {};
-	Record(const Record&) = delete;
+	Record(const Record&) = default;
 	Record(Record&& source);
 	Record(std::string source);
 
@@ -63,7 +67,34 @@ private:
 	std::unordered_map<std::string, Record> _assocChildren;
 	std::vector<Record> _arrayChildren;
 	std::string _val;
+
+	friend class boost::serialization::access;
+	
+	template <typename Archive>
+	void serialize(Archive& ar, const unsigned int version) {
+
+		ar & _type;
+
+		switch (_type) {
+			case RecordType::kUndefined: break;
+			case RecordType::kAssocArray: {
+				ar & _assocChildren;
+				break;
+			}
+			case RecordType::kArray: {
+				ar & _arrayChildren;
+				break;
+			}
+			case RecordType::kString: {
+				ar & _val;
+				break;
+			}
+		}
+	}
+
 };
 
 template <> const Record& Record::operator[](const char* assocKey) const;
 template <> Record& Record::operator[](const char* assocKey);
+
+extern const Record gNullRecord;

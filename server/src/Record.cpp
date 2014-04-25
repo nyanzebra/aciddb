@@ -1,7 +1,7 @@
 #include "Record.h"
 #include "../../shared/src/utility.h"
 
-static const Record gNullRecord;
+const Record gNullRecord;
 
 Record::Record(Record&& source) {
 	_type = source._type;
