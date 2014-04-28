@@ -15,7 +15,7 @@ public:
 	// TODO: implement DRMEs
 	//bool modifyRecord(DRME event);
 
-	bool write(std::ostream out);
+	bool write(std::ostream& out);
 
 	inline bool good() const { return _good; }
 

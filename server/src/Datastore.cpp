@@ -1,16 +1,31 @@
 #include "Datastore.h"
 
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include <vector>
 
 Datastore::Datastore(std::istream& in) {
-	boost::archive::binary_iarchive iarch(in);
+	boost::archive::text_iarchive iarch(in);
 	try {
 		iarch >> _root;	
 	} catch (...) {
 		_good = false;
 	}
+}
+
+bool Datastore::write(std::ostream& out) {
+	if (!_good) {
+		return false;
+	}
+
+	try {
+
+		boost::archive::text_oarchive oarch(out);
+		oarch << _root;
+
+		return true;
+	} catch (...) {}
+	return false;
 }
 
 std::vector<std::string> Datastore::_tokenizePath(const char* path) {
