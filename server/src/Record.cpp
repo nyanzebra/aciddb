@@ -9,7 +9,12 @@ Record::Record(Record&& source) {
 
 	_assocChildren = std::move(source._assocChildren);
 	_arrayChildren = std::move(source._arrayChildren);
+
 	_val = std::move(source._val);
+
+	source._assocChildren.clear();
+	source._arrayChildren.clear();
+	source._val.clear();
 }
 
 Record::Record(std::string source) {

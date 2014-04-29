@@ -72,7 +72,6 @@ void Datastore::removeRecord(const char* path) {
 
 	auto records = _recordsOnPath(tokens);
 	if (records.empty()) {
-		puts("no path");
 		return; }
 
 	// drop the tokens aren't represented by records

@@ -5,6 +5,61 @@
 
 TEST_SUITE("RecordEvents") {
 
+	TEST("Move") {
+
+		Datastore ds;
+
+		EventSet("child 1", "some new key")(&ds);
+		EventSet("child 2:child 3:child 4", "nested record creation")(&ds);
+		EventSet("child 2:child 5", "child 5 record")(&ds);
+
+		{
+			EventMove e("", "to"); // invalid keys
+			CHECK(!e(&ds));
+		}
+
+		// data should still exist
+		CHECK(ds.getValue("child 1") == "some new key");
+		CHECK(ds.getValue("child 2:child 3:child 4") == "nested record creation");
+		CHECK(ds.getValue("child 2:child 5") == "child 5 record");
+		CHECK(ds.getRecord("child 2")->numChildren() == 2);
+
+		{
+			EventMove e("child 1", "child 1:subchild"); // nesting further
+			CHECK(e(&ds));
+			CHECK(ds.getRecord("child 1"));
+			CHECK(ds.getRecord("child 1:subchild"));
+			CHECK(ds.getValue("child 1:subchild") == "some new key");
+		}
+
+		{
+			EventMove e("child 1:subchild", "child 1"); // de-nesting
+			CHECK(e(&ds));
+			CHECK(ds.getRecord("child 1"));
+			CHECK(!ds.getRecord("child 1:subchild"));
+			CHECK(ds.getValue("child 1") == "some new key");
+		}
+
+		{
+			EventMove e("child 2", "new child 2");
+			CHECK(e(&ds));
+			CHECK(!ds.getRecord("child 2"));
+			CHECK(ds.getRecord("new child 2"));
+			CHECK(ds.getValue("new child 2:child 3:child 4") == "nested record creation");
+			CHECK(ds.getValue("new child 2:child 5") == "child 5 record");
+		}
+
+		{
+			EventMove e("new child 2:child 3:child 4", "child 2:new child 4");
+			CHECK(e(&ds));
+			CHECK(!ds.getRecord("child 2:child 3:child 4"));
+			CHECK(!ds.getRecord("child 2:child 3")); // deletes empty parents
+			CHECK(ds.getRecord("child 2"));
+			CHECK(ds.getRecord("child 2:new child 4"));
+			CHECK(ds.getRecord("child 2")->numChildren() == 1);
+		}
+	};
+
 	TEST("Delete") {
 
 		Datastore ds;
@@ -43,7 +98,6 @@ TEST_SUITE("RecordEvents") {
 
 		{
 			EventDelete e("child 2");
-			printf("deleting\n");
 			CHECK(e(&ds));
 			CHECK(!ds.getRecord("child 2")); // children are deleted as well
 		}
