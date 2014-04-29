@@ -36,18 +36,18 @@ TEST_SUITE("Datastore") {
 
 		CHECK(ds1.good());
 
-		CHECK(!strcmp(ds1.getKey("child 1:0"), "e0"));
-		CHECK(!strcmp(ds1.getKey("child 1:1"), "e1"));
-		CHECK(!strcmp(ds1.getKey("child 1:2"), "e2"));
-		CHECK(!strcmp(ds1.getKey("child 1:3"), "e3"));
+		CHECK(!strcmp(ds1.getValue("child 1:0"), "e0"));
+		CHECK(!strcmp(ds1.getValue("child 1:1"), "e1"));
+		CHECK(!strcmp(ds1.getValue("child 1:2"), "e2"));
+		CHECK(!strcmp(ds1.getValue("child 1:3"), "e3"));
 		
-		CHECK(!strcmp(ds1.getKey("child :1"), "")); // doesn't exist
-		CHECK(!strcmp(ds1.getKey("child :2"), "")); // doesn't exist
+		CHECK(!strcmp(ds1.getValue("child :1"), "")); // doesn't exist
+		CHECK(!strcmp(ds1.getValue("child :2"), "")); // doesn't exist
 
-		CHECK(!strcmp(ds1.getKey("child 2"), "string"));
-		CHECK(!strcmp(ds1.getKey("child 3:key 1"), "key 1"));
-		CHECK(!strcmp(ds1.getKey("child 3:key 2"), "key 2"));
-		CHECK(!strcmp(ds1.getKey("child 3:child 4:child 5"), "key 1"));
+		CHECK(!strcmp(ds1.getValue("child 2"), "string"));
+		CHECK(!strcmp(ds1.getValue("child 3:key 1"), "key 1"));
+		CHECK(!strcmp(ds1.getValue("child 3:key 2"), "key 2"));
+		CHECK(!strcmp(ds1.getValue("child 3:child 4:child 5"), "key 1"));
 
 		std::stringstream outfile;
 
@@ -57,18 +57,18 @@ TEST_SUITE("Datastore") {
 
 		CHECK(ds2.good());
 
-		CHECK(!strcmp(ds2.getKey("child 1:0"), "e0"));
-		CHECK(!strcmp(ds2.getKey("child 1:1"), "e1"));
-		CHECK(!strcmp(ds2.getKey("child 1:2"), "e2"));
-		CHECK(!strcmp(ds2.getKey("child 1:3"), "e3"));
+		CHECK(!strcmp(ds2.getValue("child 1:0"), "e0"));
+		CHECK(!strcmp(ds2.getValue("child 1:1"), "e1"));
+		CHECK(!strcmp(ds2.getValue("child 1:2"), "e2"));
+		CHECK(!strcmp(ds2.getValue("child 1:3"), "e3"));
 		
-		CHECK(!strcmp(ds2.getKey("child :1"), "")); // doesn't exist
-		CHECK(!strcmp(ds2.getKey("child :2"), "")); // doesn't exist
+		CHECK(!strcmp(ds2.getValue("child :1"), "")); // doesn't exist
+		CHECK(!strcmp(ds2.getValue("child :2"), "")); // doesn't exist
 
-		CHECK(!strcmp(ds2.getKey("child 2"), "string"));
-		CHECK(!strcmp(ds2.getKey("child 3:key 1"), "key 1"));
-		CHECK(!strcmp(ds2.getKey("child 3:key 2"), "key 2"));
-		CHECK(!strcmp(ds2.getKey("child 3:child 4:child 5"), "key 1"));
+		CHECK(!strcmp(ds2.getValue("child 2"), "string"));
+		CHECK(!strcmp(ds2.getValue("child 3:key 1"), "key 1"));
+		CHECK(!strcmp(ds2.getValue("child 3:key 2"), "key 2"));
+		CHECK(!strcmp(ds2.getValue("child 3:child 4:child 5"), "key 1"));
 	};
 
 };

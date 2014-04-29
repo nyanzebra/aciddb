@@ -28,8 +28,8 @@ bool Datastore::write(std::ostream& out) {
 	return false;
 }
 
-std::vector<std::string> Datastore::_tokenizePath(const char* path) {
-	const char* pos = path;
+std::vector<std::string> Datastore::_tokenizePath(const char* key) {
+	const char* pos = key;
 
 	bool escaped = false;
 
@@ -46,28 +46,36 @@ std::vector<std::string> Datastore::_tokenizePath(const char* path) {
 		} else if (*pos == '\\') {
 			escaped = true;
 		} else if (*pos == ':') {
+			// no part of the path should be empty
+			if (ret.back() == "") {
+				return {};
+			}
 			ret.push_back("");
 		} else {
 			ret.back().push_back(*pos);
 		}
 		++pos;
 	}
+	// no part of the path should be empty
+	if (ret.size() == 1 && ret.back() == "") {
+		return {};
+	}
 	return ret;
 }
 
-const char* Datastore::getKey(const char* path) {
+const char* Datastore::getValue(const char* key) {
 	if (_good == false) {
 		return "";
 	}
-	if (auto r = _getRecord(path)) {
+	if (auto r = getRecord(key)) {
 		return r->getVal().c_str();
 	}
 	return "";
 }
 
-Record* Datastore::_getRecord(const char* path) {
+Record* Datastore::getRecord(const char* key) {
 	// TODO: string operations like this are expensive, optimize?
-	auto tokens = _tokenizePath(path);
+	auto tokens = _tokenizePath(key);
 
 	Record* r = &_root;
 
@@ -90,6 +98,32 @@ Record* Datastore::_getRecord(const char* path) {
 			++depth;
 		}
 		return nullptr;
+	} catch (...) {
+		return nullptr;
+	}
+}
+
+Record* Datastore::createPath(const char* path) {
+	// TODO: string operations like this are expensive, optimize?
+	auto tokens = _tokenizePath(path);
+
+	if (tokens.size() == 0) { return nullptr; } // invalid path
+
+	Record* r = &_root;
+
+	size_t depth = 0;
+	size_t targetDepth = tokens.size();
+
+	try {
+		while (depth < targetDepth) {
+			auto type = r->getType();
+			if (type != RecordType::kUndefined && type != RecordType::kAssocArray) {
+				return nullptr;
+			}
+			r = &(*r)[tokens[depth].c_str()];
+			++depth;
+		}
+		return r;
 	} catch (...) {
 		return nullptr;
 	}

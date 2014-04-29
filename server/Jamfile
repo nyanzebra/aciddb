@@ -2,10 +2,8 @@ lib boost-serialization : : <file>../deps/lib/libboost_serialization.a <link>sta
 
 lib server-lib : [ glob src/*.cpp : src/main.cpp ] ../shared//shared :
 	<link>static
-	<include>../deps/include
 : :
 	<library>boost-serialization
-	<include>../deps/include
 ;
 
 exe server : server-lib src/main.cpp ../shared//shared ;
