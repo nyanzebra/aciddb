@@ -6,7 +6,7 @@ const Record gNullRecord;
 Record::Record(Record&& source) {
 	_type = source._type;
 	source._type = RecordType::kUndefined;
-	
+
 	_assocChildren = std::move(source._assocChildren);
 	_arrayChildren = std::move(source._arrayChildren);
 	_val = std::move(source._val);
@@ -33,7 +33,7 @@ Record& Record::operator=(Record&& rhs) {
 
 	_type = rhs._type;
 	rhs._type = RecordType::kUndefined;
-	
+
 	_assocChildren = std::move(rhs._assocChildren);
 	_arrayChildren = std::move(rhs._arrayChildren);
 	_val = std::move(rhs._val);
@@ -41,44 +41,42 @@ Record& Record::operator=(Record&& rhs) {
 	return *this;
 }
 
-const Record& Record::operator[](size_t arrayIndex) const {
-	if (_type != RecordType::kArray) {
-		throw RecordException(Format("cannot access index of children for records of type %s", RecordTypeStr(_type)));
-	}
-
-	return _arrayChildren.at(arrayIndex);
-}
-
-Record& Record::operator[](size_t arrayIndex) {
-	// Cast *this to const, strip away the const of the resulting child Record.
-	// See http://stackoverflow.com/questions/123758/how-do-i-remove-code-duplication-between-similar-const-and-non-const-member-func
-	return const_cast<Record&>(static_cast<const Record&>(*this)[arrayIndex]);
-}
-
-template <>
-const Record& Record::operator[](const char* assocKey) const {
-	if (_type != RecordType::kAssocArray) {
+Record& Record::getChild(const char* key) {
+	if (_type != RecordType::kAssocArray && _type != RecordType::kArray) {
 		throw RecordException(Format("cannot access keys of children for records of type %s", RecordTypeStr(_type)));
 	}
 
-	auto it = _assocChildren.find(assocKey);
-
-	if (it != _assocChildren.end()) {
-		return it->second;
+	if (_type == RecordType::kAssocArray) {
+		auto it = _assocChildren.find(key);
+		if (it != _assocChildren.end()) {
+			return it->second;
+		}
+	} else if (_type == RecordType::kArray) {
+		try {
+			return _arrayChildren.at(std::stoll(key));
+		} catch (...) {}
 	}
-	return gNullRecord;
+
+	throw RecordException("child with key not found");
 }
 
-template <>
-Record& Record::operator[](const char* assocKey) {
-	if (_type != RecordType::kAssocArray) {
+Record& Record::operator[](const char* key) {
+	if (_type != RecordType::kAssocArray && _type != RecordType::kArray) {
 		if (_type != RecordType::kUndefined) {
-			throw RecordException(Format("cannot access keys of children for records of type %s", RecordTypeStr(_type)));	
+			throw RecordException(Format("cannot access keys of children for records of type %s", RecordTypeStr(_type)));
 		}
-		_type = RecordType::kAssocArray; 
+		_type = RecordType::kAssocArray; // default to creating an assoc array
 	}
 
-	return _assocChildren[assocKey];
+	if (_type == RecordType::kAssocArray) {
+		return _assocChildren[key];
+	} else if (_type == RecordType::kArray) {
+		try {
+			return _arrayChildren.at(std::atoll(key));
+		} catch (...) {}
+	}
+
+	throw RecordException("array index key out of bounds");
 }
 
 bool Record::operator==(const std::string& rhs) {
@@ -108,16 +106,46 @@ void Record::push_back(std::string val) {
 
 size_t Record::numChildren() const {
 	if (_type == RecordType::kArray) {
-		return _arrayChildren.size();	
+		return _arrayChildren.size();
 	} else if (_type == RecordType::kAssocArray) {
 		return _assocChildren.size();
 	}
-	throw RecordException(Format("numChildren not applicable to records of type %s", RecordTypeStr(_type)));	
+	throw RecordException(Format("numChildren not applicable to records of type %s", RecordTypeStr(_type)));
+}
+
+void Record::removeChild(const char* key) {
+	if (_type == RecordType::kArray) {
+		size_t i = 0;
+		try {
+			i = std::atoll(key);
+			if (i < _arrayChildren.size()) {
+				_arrayChildren.erase(_arrayChildren.begin() + i);
+				return;
+			}
+		} catch (...) {}
+	} else if (_type == RecordType::kAssocArray) {
+		auto it = _assocChildren.find(key);
+		if (it != _assocChildren.end()) {
+			_assocChildren.erase(it);
+			return;
+		}
+	}
+
+	throw RecordException(Format("cannot remove child: invalid key %d", key));
+}
+
+void Record::removeAllChildren() {
+	if (_type != RecordType::kArray && _type != RecordType::kAssocArray) {
+		throw RecordException(Format("cannot remove children in record of type %s", RecordTypeStr(_type)));
+	}
+
+	_assocChildren.clear();
+	_arrayChildren.clear();
 }
 
 const std::string& Record::getVal() {
 	if (_type != RecordType::kString) {
-		throw RecordException(Format("getVal not applicable to records of type %s", RecordTypeStr(_type)));			
+		throw RecordException(Format("getVal not applicable to records of type %s", RecordTypeStr(_type)));
 	}
 	return _val;
 }

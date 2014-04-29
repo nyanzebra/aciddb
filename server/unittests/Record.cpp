@@ -33,20 +33,20 @@ TEST_SUITE("Record") {
 		CHECK(root["child 1"].getType() == RecordType::kArray);
 		CHECK(root["child 1"].numChildren() == 4);
 
-		CHECK(root["child 1"][0].getType() == RecordType::kString);
-		CHECK(root["child 1"][1].getType() == RecordType::kString);
-		CHECK(root["child 1"][2].getType() == RecordType::kString);
-		CHECK(root["child 1"][3].getType() == RecordType::kString);
+		CHECK(root["child 1"]["0"].getType() == RecordType::kString);
+		CHECK(root["child 1"]["1"].getType() == RecordType::kString);
+		CHECK(root["child 1"]["2"].getType() == RecordType::kString);
+		CHECK(root["child 1"]["3"].getType() == RecordType::kString);
 
-		CHECK(root["child 1"][0] == "e0");
-		CHECK(root["child 1"][1] == "e1");
-		CHECK(root["child 1"][2] == "e2");
-		CHECK(root["child 1"][3] == "e3");
+		CHECK(root["child 1"]["0"] == "e0");
+		CHECK(root["child 1"]["1"] == "e1");
+		CHECK(root["child 1"]["2"] == "e2");
+		CHECK(root["child 1"]["3"] == "e3");
 
-		CHECK(root["child 1"][0].getVal() == "e0");
-		CHECK(root["child 1"][1].getVal() == "e1");
-		CHECK(root["child 1"][2].getVal() == "e2");
-		CHECK(root["child 1"][3].getVal() == "e3");
+		CHECK(root["child 1"]["0"].getVal() == "e0");
+		CHECK(root["child 1"]["1"].getVal() == "e1");
+		CHECK(root["child 1"]["2"].getVal() == "e2");
+		CHECK(root["child 1"]["3"].getVal() == "e3");
 
 		root["child 2"] = "string";
 
@@ -68,6 +68,27 @@ TEST_SUITE("Record") {
 		CHECK(root["child 3"].getType() == RecordType::kAssocArray);
 		CHECK(root["child 3"]["child 4"].getType() == RecordType::kAssocArray);
 		CHECK(root["child 3"]["child 4"]["child 5"].getType() == RecordType::kString);
+
+		root["child 3"].removeChild("child 4");
+
+		CHECK(root["child 3"].getType() == RecordType::kAssocArray);
+		CHECK(root["child 3"]["child 4"].getType() == RecordType::kUndefined);
+
+		root.removeChild("child 3");
+		CHECK(root.numChildren() == 2);
+
+		root.removeChild("child 2");
+		CHECK(root.numChildren() == 1);
+
+		root.removeChild("child 1");
+		CHECK(root.numChildren() == 0);
+		CHECK(root.getType() == RecordType::kAssocArray);
+
+		root["child"] = "string";
+		CHECK(root.numChildren() == 1);
+
+		root.removeAllChildren();
+		CHECK(root.numChildren() == 0);
 	};
 
 	TEST("Serialization") {
@@ -102,20 +123,20 @@ TEST_SUITE("Record") {
 			CHECK(root["child 1"].getType() == RecordType::kArray);
 			CHECK(root["child 1"].numChildren() == 4);
 
-			CHECK(root["child 1"][0].getType() == RecordType::kString);
-			CHECK(root["child 1"][1].getType() == RecordType::kString);
-			CHECK(root["child 1"][2].getType() == RecordType::kString);
-			CHECK(root["child 1"][3].getType() == RecordType::kString);
+			CHECK(root["child 1"]["0"].getType() == RecordType::kString);
+			CHECK(root["child 1"]["1"].getType() == RecordType::kString);
+			CHECK(root["child 1"]["2"].getType() == RecordType::kString);
+			CHECK(root["child 1"]["3"].getType() == RecordType::kString);
 
-			CHECK(root["child 1"][0] == "e0");
-			CHECK(root["child 1"][1] == "e1");
-			CHECK(root["child 1"][2] == "e2");
-			CHECK(root["child 1"][3] == "e3");
+			CHECK(root["child 1"]["0"] == "e0");
+			CHECK(root["child 1"]["1"] == "e1");
+			CHECK(root["child 1"]["2"] == "e2");
+			CHECK(root["child 1"]["3"] == "e3");
 
-			CHECK(root["child 1"][0].getVal() == "e0");
-			CHECK(root["child 1"][1].getVal() == "e1");
-			CHECK(root["child 1"][2].getVal() == "e2");
-			CHECK(root["child 1"][3].getVal() == "e3");
+			CHECK(root["child 1"]["0"].getVal() == "e0");
+			CHECK(root["child 1"]["1"].getVal() == "e1");
+			CHECK(root["child 1"]["2"].getVal() == "e2");
+			CHECK(root["child 1"]["3"].getVal() == "e3");
 
 			CHECK(root["child 2"].getType() == RecordType::kString);
 			CHECK(root["child 2"] == "string");

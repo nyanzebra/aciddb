@@ -29,5 +29,7 @@ bool EventMove::operator()(Datastore* ds) const {
 bool EventDelete::operator()(Datastore* ds) const {
 	if (!ds) { return false; }
 
-	return false;
+	ds->removeRecord(getKey().c_str());
+
+	return true;
 }

@@ -47,5 +47,6 @@ private:
 
 class EventDelete : public RecordEvent {
 public:
+	using RecordEvent::RecordEvent;
 	bool operator()(Datastore* ds) const;
 };
