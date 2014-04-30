@@ -1,9 +1,17 @@
 lib boost-serialization : : <file>../deps/lib/libboost_serialization.a <link>static ;
+lib boost-thread : : <file>../deps/lib/libboost_thread.a <link>static ;
+lib boost-system : : <file>../deps/lib/libboost_system.a <link>static ;
+lib boost-date-time : : <file>../deps/lib/libboost_date_time.a <link>static ;
+lib boost-program-options : : <file>../deps/lib/libboost_program_options.a <link>static ;
 
 lib server-lib : [ glob src/*.cpp : src/main.cpp ] ../shared//shared :
 	<link>static
 : :
 	<library>boost-serialization
+	<library>boost-thread
+	<library>boost-system
+	<library>boost-date-time
+	<library>boost-program-options
 ;
 
 exe server : server-lib src/main.cpp ../shared//shared ;

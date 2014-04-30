@@ -12,7 +12,7 @@ TEST_SUITE("Journal") {
 		std::stringstream file;
 
 		{
-			Journal j(file);
+			Journal j(&file);
 
 			RecordEvent e(RecordEventType::kSet, "record", "key");
 
@@ -22,7 +22,7 @@ TEST_SUITE("Journal") {
 		{
 			Datastore ds;
 
-			Journal j(file);
+			Journal j(&file);
 
 			CHECK(j.applyToDatastore(&ds));
 

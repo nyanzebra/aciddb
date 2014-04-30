@@ -4,7 +4,7 @@
 
 DataController::DataController(std::iostream& datastoreSource, std::iostream& journalSource)
 	: _datastore(datastoreSource)
-	, _journal(journalSource)
+	, _journal(&journalSource)
 {}
 
 Result DataController::processTransaction(const Transaction& transaction) {

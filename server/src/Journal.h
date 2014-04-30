@@ -9,9 +9,12 @@ class Datastore;
 
 class Journal {
 public:
-	Journal(std::iostream& data)
-		: _dataStream(data)
+	Journal() = default;
+	Journal(std::iostream* dataStream)
+		: _dataStream(dataStream)
 	{}
+
+	inline void useStream(std::iostream* stream) { _dataStream = stream; };
 
 	/**
 	 * @brief Writes a single Transaction to the Journal.
@@ -34,5 +37,5 @@ public:
 	bool applyToDatastore(Datastore* ds);
 
 private:
-	std::iostream& _dataStream;
+	std::iostream* _dataStream = nullptr;
 };
