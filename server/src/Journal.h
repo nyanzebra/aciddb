@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "RecordEvent.h"
-#include "config.h"
+#include "types.h"
 
 class Datastore;
 

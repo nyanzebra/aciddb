@@ -6,9 +6,7 @@
 #include "Datastore.h"
 #include "Journal.h"
 #include "RecordEvent.H"
-
-typedef std::vector<std::string> Transaction;
-typedef std::vector<std::string> Result;
+#include "types.h"
 
 class DataController {
 public:

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <mutex>
 
 #include "utility.h"
 
@@ -18,12 +19,14 @@ const char* LogLevelStr(LogLevel level);
 
 namespace LoggingImpl {
 	extern LogLevel _gLevel;
+	extern std::mutex gLoggingMutex;
 }
 
 void SetLoggingLevel(LogLevel level);
 
 template <typename ... Args>
 void Logf(std::basic_ostream<char>& out, LogLevel level, const std::string& format, Args&& ... args) {
+	std::lock_guard<std::mutex> l(LoggingImpl::gLoggingMutex);
 	if (level >= LoggingImpl::_gLevel) {
 		out << "[" << LogLevelStr(level) << "] " << Format(format, std::forward<Args>(args)...) << std::endl;	
 	}
@@ -31,6 +34,7 @@ void Logf(std::basic_ostream<char>& out, LogLevel level, const std::string& form
 
 template <typename ... Args>
 void Logf(std::basic_ostream<char>& out, const std::string& format, Args&& ... args) {
+	std::lock_guard<std::mutex> l(LoggingImpl::gLoggingMutex);
 	out << Format(format, std::forward<Args>(args)...) << std::endl;
 }
 

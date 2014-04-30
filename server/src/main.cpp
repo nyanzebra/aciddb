@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 
 	Logf(kLogLevelInfo, "stopping database service");
 
-	db.stop();
+	db.stopAndWait();
 	Logf("goodbye");
 
 	return 0;

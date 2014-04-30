@@ -1,5 +1,5 @@
 #include "Datastore.h"
-#include "config.h"
+#include "types.h"
 
 #include "../../shared/src/logging.h"
 

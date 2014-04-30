@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include "../src/config.h"
+#include "../src/types.h"
 #include "../src/RecordEvent.h"
 #include "../src/Datastore.h"
 

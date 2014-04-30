@@ -2,7 +2,7 @@
 #include <sstream>
 #include <iostream>
 
-#include "../src/config.h"
+#include "../src/types.h"
 #include "../src/Record.h"
 
 TEST_SUITE("Record") {

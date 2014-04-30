@@ -1,6 +1,10 @@
 #include "logging.h"
 
 namespace LoggingImpl {
+	std::mutex gLoggingMutex;
+}
+
+namespace LoggingImpl {
 	LogLevel _gLevel = DEFAULT_LOG_LEVEL;
 }
 
