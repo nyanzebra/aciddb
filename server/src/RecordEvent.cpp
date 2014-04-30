@@ -4,7 +4,7 @@
 bool EventSet::operator()(Datastore* ds) const {
 	if (!ds) { return false; }
 
-	auto r = ds->createPath(getKey().c_str());
+	auto r = ds->createPath(key.c_str());
 
 	if (!r) {
 		return false;
@@ -15,7 +15,7 @@ bool EventSet::operator()(Datastore* ds) const {
 		return false;
 	}
 
-	(*r) = _data;
+	(*r) = data;
 
 	return true;
 }
@@ -23,15 +23,16 @@ bool EventSet::operator()(Datastore* ds) const {
 bool EventMove::operator()(Datastore* ds) const {
 	if (!ds) { return false; }
 
-	auto from = ds->getRecord(getKey().c_str());
+	auto from = ds->getRecord(key.c_str());
 	if (!from) { return false; }
 
 	Record temp(std::move(*from));
 
-	ds->removeRecord(getKey().c_str());
+	ds->removeRecord(key.c_str());
 	
-	auto target = ds->createPath(_target.c_str());
-	*target = std::move(temp);
+	auto targetRecord = ds->createPath(target.c_str());
+
+	*targetRecord = std::move(temp);
 
 	return true;
 }
@@ -39,7 +40,7 @@ bool EventMove::operator()(Datastore* ds) const {
 bool EventDelete::operator()(Datastore* ds) const {
 	if (!ds) { return false; }
 
-	ds->removeRecord(getKey().c_str());
+	ds->removeRecord(key.c_str());
 
 	return true;
 }
