@@ -17,6 +17,8 @@ public:
 
 	Record* getRecord(const char* path);
 
+	inline Record* getRoot() { return &_root; }
+
 	/**
 	 * @brief Creates a new path in the database and returns the record represented
 	 * by that path.
@@ -49,17 +51,14 @@ private:
 	std::vector<std::string> _tokenizePath(const char* path);
 
 	/**
-	 * @brief Returns pointers to all of the records along a given path.
+	 * @brief Returns an array of pointers representing records on a path.
 	 *
-	 * @details This function will return as many records as are applicable
-	 * to the path. The path may not exist in the tree and so the size of the
-	 * returned array may be less than the size of the tokenized path. The
-	 * returned array will exclude the root node.
-	 *
-	 * If the path is invalid, the size of the returned vector will be zero.
+	 * @details This function will return as many pointers as the input
+	 * array had tokens in the path. If the path doesn't represent enough valid
+	 * Records, null pointers will fill invalid record spots.
 	 *
 	 * @param path Path to traverse
-	 * @return Array of valid Record pointers that are on the path.
+	 * @return Array of Record pointers that are on the path.
 	 */
 	std::vector<Record*> _recordsOnPath(const std::vector<std::string>& path);
 

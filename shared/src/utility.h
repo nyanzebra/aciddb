@@ -23,3 +23,6 @@ std::string Format(std::string fmt, Args&& ... args) {
 	} catch (...) {}
 	return std::string("[invalid format]: ") + fmt;
 }
+
+std::vector<std::string>& Split(const std::string &str, char delimiter, std::vector<std::string> &dest);
+std::vector<std::string> Split(const std::string &str, char delimiter);

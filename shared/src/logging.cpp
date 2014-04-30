@@ -1,7 +1,7 @@
 #include "logging.h"
 
 namespace LoggingImpl {
-	LogLevel _gLevel = kLogLevelInfo;
+	LogLevel _gLevel = DEFAULT_LOG_LEVEL;
 }
 
 void SetLoggingLevel(LogLevel level) {

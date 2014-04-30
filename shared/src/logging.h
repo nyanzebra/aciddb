@@ -4,6 +4,8 @@
 
 #include "utility.h"
 
+#define DEFAULT_LOG_LEVEL kLogLevelDebug
+
 enum LogLevel {
 	kLogLevelDebug  = 0,
 	kLogLevelInfo   = 1,

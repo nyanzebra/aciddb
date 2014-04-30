@@ -1,16 +1,28 @@
 #include "Datastore.h"
+#include "config.h"
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include "../../shared/src/logging.h"
+
 #include <vector>
 
 static const std::string gEmptyString;
 
 Datastore::Datastore(std::istream& in) {
-	boost::archive::text_iarchive iarch(in);
 	try {
-		iarch >> _root;	
-	} catch (...) {
+		auto pos = in.tellg();
+
+		in.seekg(0, in.end);
+
+		if (in.tellg() - pos == 0) {
+			// empty input stream
+			return;
+		}
+		in.seekg(pos);
+
+		InputArchiveType iarch(in);
+		iarch >> _root;
+	} catch (std::exception& e) {
+		Logf(kLogLevelInfo, "unable to parse datastore input stream");
 		_good = false;
 	}
 }
@@ -22,7 +34,7 @@ bool Datastore::write(std::ostream& out) {
 
 	try {
 
-		boost::archive::text_oarchive oarch(out);
+		OutputArchiveType oarch(out);
 		oarch << _root;
 
 		return true;
@@ -71,39 +83,35 @@ void Datastore::removeRecord(const char* path) {
 	if (tokens.empty()) { return; } // invalid path
 
 	auto records = _recordsOnPath(tokens);
-	if (records.empty()) {
-		return; }
+	if (records.empty()) { return; }
+	if (!records.back()) { return; }
 
-	// drop the tokens aren't represented by records
-	tokens.resize(records.size());
+	// records array now has no null pointers
 
-	if (records.size() == 1) {
-		// a child of root is being removed
-		_root.removeChild(tokens.back().c_str());
-		return;
-	}
+	// records and tokens correlate 1:1.
+	// _root -> records[0] -> records[1] -> ...
+	//      tokens[0] -> tokens[1] -> ...
+	// The associations between parent and child are named.
+	// The names are the tokens.
 
 	records.pop_back();
-	Record* parent = records.back();
-	records.pop_back();
+	Record* parent = records.empty() ? &_root : records.back();
+	parent->removeChild(tokens.back().c_str());
+	tokens.pop_back();
 
 	try {
-		parent->removeChild(tokens.back().c_str());
-		tokens.pop_back();
-
-		// prune stale records in this branch
-		while (records.size() > 0) {
-			Record* child = parent;
-			parent = records.back();
-			records.pop_back();
-
-			if (child->numChildren() == 0) {
+		while (tokens.size() > 0) {
+			if (parent->numChildren() == 0) {
+				records.pop_back();
+				parent = records.empty() ? &_root : records.back();
 				parent->removeChild(tokens.back().c_str());
 				tokens.pop_back();
+			} else {
+				break;
 			}
 		}
-	} catch(std::exception & e) {
-		printf("%s\n", e.what());
+	} catch (std::exception& e) {
+		Logf("%s", e.what());
 	}
 }
 
@@ -119,16 +127,10 @@ std::vector<Record*> Datastore::_recordsOnPath(const std::vector<std::string>& p
 		try {
 			r = &r->getChild(token.c_str());
 		} catch (...) {
-			return ret;
-		}
-		auto type = r->getType();
-		if (type == RecordType::kUndefined) {
+			ret.insert(ret.end(), path.size() - ret.size(), nullptr); // fill remainder with null
 			return ret;
 		}
 		ret.push_back(r);
-		if (type == RecordType::kString) {
-			return ret;
-		}
 	}
 	return ret;
 }

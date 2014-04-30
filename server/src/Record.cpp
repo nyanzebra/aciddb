@@ -28,6 +28,7 @@ Record& Record::operator=(std::string rhs) {
 	}
 	_type = RecordType::kString;
 	_val = std::move(rhs);
+
 	return *this;
 }
 
@@ -42,6 +43,10 @@ Record& Record::operator=(Record&& rhs) {
 	_assocChildren = std::move(rhs._assocChildren);
 	_arrayChildren = std::move(rhs._arrayChildren);
 	_val = std::move(rhs._val);
+
+	rhs._assocChildren.clear();
+	rhs._arrayChildren.clear();
+	rhs._val.clear();
 
 	return *this;
 }

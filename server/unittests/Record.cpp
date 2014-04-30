@@ -1,9 +1,8 @@
 #include <testing.h>
 #include <sstream>
 #include <iostream>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
 
+#include "../src/config.h"
 #include "../src/Record.h"
 
 TEST_SUITE("Record") {
@@ -96,7 +95,7 @@ TEST_SUITE("Record") {
 		std::stringstream file;
 
 		{
-			boost::archive::binary_oarchive oarch(file);
+			OutputArchiveType oarch(file);
 
 			Record root;
 
@@ -114,7 +113,7 @@ TEST_SUITE("Record") {
 			oarch << root;
 		}
 
-		boost::archive::binary_iarchive iarch(file);
+		InputArchiveType iarch(file);
 
 		{
 			Record root;

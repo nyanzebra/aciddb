@@ -3,81 +3,50 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/level.hpp>
 #include <boost/serialization/tracking.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <string>
+#include <vector>
 
 class Datastore;
 
 enum class RecordEventType : uint8_t {
-	kSet    = 0x1,
-	kMove   = 0x2,
-	kDelete = 0x3,
+	kUndefined = 0x0,
+	kSet       = 0x1,
+	kMove      = 0x2,
+	kDelete    = 0x3,
 };
 
 class RecordEvent {
 public:
-	RecordEvent(std::string key) : key(std::move(key)) {}
-	virtual ~RecordEvent() = default;
+	RecordEvent() = default;
 
-	virtual RecordEventType getType() const = 0;
-	virtual bool operator()(Datastore* ds) const = 0;
-
-	const std::string key;
-};
-
-class EventSet : public RecordEvent {
-public:
-	RecordEventType getType() const { return RecordEventType::kSet; }
-
-	EventSet(std::string key, std::string data)
-		: RecordEvent(std::move(key))
-		, data(std::move(data))
+	RecordEvent(RecordEventType type, std::vector<std::string> args)
+		: _args(std::move(args))
+		, _type(type)
 	{}
 
-	bool operator()(Datastore* ds) const;
-
-	const std::string data;
-};
-
-class EventMove : public RecordEvent {
-public:
-	RecordEventType getType() const { return RecordEventType::kMove; }
-
-	EventMove(std::string key, std::string target)
-		: RecordEvent(std::move(key))
-		, target(std::move(target))
+	template <typename ... Args>
+	RecordEvent(RecordEventType type, std::string arg, Args&& ... args)
+		: _args({std::move(arg), std::forward<Args>(args)...})
+		, _type(type)
 	{}
 
+	RecordEventType getType() const { return _type; }
 	bool operator()(Datastore* ds) const;
 
-	const std::string target;
-};
+private:
+	std::vector<std::string> _args;
+	RecordEventType _type = RecordEventType::kUndefined;
 
-class EventDelete : public RecordEvent {
-public:
-	RecordEventType getType() const { return RecordEventType::kDelete; }
+	friend class boost::serialization::access;
 
-	using RecordEvent::RecordEvent;
-	bool operator()(Datastore* ds) const;
-};
-
-template <typename Archive>
-void serialize(Archive& ar, RecordEvent& event, const unsigned int version) {
-	auto t = event.getType();
-
-	ar & t;
-
-	switch (t) {
-		case RecordEventType::kSet:
-			ar & static_cast<EventSet&>(event).data;
-			break;
-		case RecordEventType::kMove:
-			ar & static_cast<EventMove&>(event).target;
-			break;
-		case RecordEventType::kDelete:
-			break;
+	template <typename Archive>
+	void serialize(Archive& ar, const unsigned int version) {
+		ar & _type;
+		ar & _args;
 	}
-}
+};
 
 // elminate serialization overhead at the cost of
 // never being able to increase the version.

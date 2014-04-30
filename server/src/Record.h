@@ -65,6 +65,7 @@ public:
 	void removeAllChildren();
 
 	const std::string& getVal();
+
 private:
 	RecordType _type = RecordType::kUndefined;
 	std::unordered_map<std::string, Record> _assocChildren;

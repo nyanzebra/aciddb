@@ -1,8 +1,8 @@
 #include <testing.h>
 #include <iostream>
 #include <sstream>
-#include <boost/archive/text_oarchive.hpp>
 
+#include "../src/config.h"
 #include "../src/Datastore.h"
 #include "../src/Record.h"
 
@@ -14,7 +14,7 @@ TEST_SUITE("Datastore") {
 
 		// build test file
 		{
-			boost::archive::text_oarchive oarch(infile);
+			OutputArchiveType oarch(infile);
 		
 			Record root;
 	
