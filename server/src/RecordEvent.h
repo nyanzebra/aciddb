@@ -8,13 +8,20 @@
 #include <string>
 #include <vector>
 
+#define ERROR_STRING          "ERROR"
+#define INTERNAL_ERROR_STRING "INTERNAL ERROR"
+#define OK_STRING             "OK"
+#define NOT_FOUND_STRING      "KEY NOT FOUND"
+#define INVALID_PATH_STRING   "INVALID PATH"
+
 class Datastore;
 
 enum class RecordEventType : uint8_t {
 	kUndefined = 0x0,
-	kSet       = 0x1,
-	kMove      = 0x2,
-	kDelete    = 0x3,
+	kGet       = 0x1,
+	kSet       = 0x2,
+	kMove      = 0x3,
+	kDelete    = 0x4,
 };
 
 class RecordEvent {
@@ -33,7 +40,7 @@ public:
 	{}
 
 	RecordEventType getType() const { return _type; }
-	bool operator()(Datastore* ds) const;
+	std::string operator()(Datastore* ds) const;
 
 private:
 	std::vector<std::string> _args;

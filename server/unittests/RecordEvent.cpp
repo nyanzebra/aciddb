@@ -25,7 +25,7 @@ TEST_SUITE("RecordEvents") {
 
 		{
 			RecordEvent e(RecordEventType::kMove, "", "to"); // invalid keys
-			CHECK(!e(&ds));
+			CHECK(e(&ds) == NOT_FOUND_STRING);
 		}
 
 		// data should still exist
@@ -36,7 +36,7 @@ TEST_SUITE("RecordEvents") {
 
 		{
 			RecordEvent e(RecordEventType::kMove, "child 1", "child 1:subchild"); // nesting further
-			CHECK(e(&ds));
+			CHECK(e(&ds) == OK_STRING);
 			CHECK(ds.getRecord("child 1"));
 			CHECK(ds.getRecord("child 1:subchild"));
 			CHECK(ds.getValue("child 1:subchild") == "some new key");
@@ -44,7 +44,7 @@ TEST_SUITE("RecordEvents") {
 
 		{
 			RecordEvent e(RecordEventType::kMove, "child 1:subchild", "child 1"); // de-nesting
-			CHECK(e(&ds));
+			CHECK(e(&ds) == OK_STRING);
 			CHECK(ds.getRecord("child 1"));
 			CHECK(!ds.getRecord("child 1:subchild"));
 			CHECK(ds.getValue("child 1") == "some new key");
@@ -52,7 +52,7 @@ TEST_SUITE("RecordEvents") {
 
 		{
 			RecordEvent e(RecordEventType::kMove, "child 2", "new child 2");
-			CHECK(e(&ds));
+			CHECK(e(&ds) == OK_STRING);
 			CHECK(!ds.getRecord("child 2"));
 			CHECK(ds.getRecord("new child 2"));
 			CHECK(ds.getValue("new child 2:child 3:child 4") == "nested record creation");
@@ -61,7 +61,7 @@ TEST_SUITE("RecordEvents") {
 
 		{
 			RecordEvent e(RecordEventType::kMove, "new child 2:child 3:child 4", "child 2:new child 4");
-			CHECK(e(&ds));
+			CHECK(e(&ds) == OK_STRING);
 			CHECK(!ds.getRecord("child 2:child 3:child 4"));
 			CHECK(!ds.getRecord("child 2:child 3")); // deletes empty parents
 			CHECK(ds.getRecord("child 2"));
@@ -80,7 +80,7 @@ TEST_SUITE("RecordEvents") {
 
 		{
 			RecordEvent e(RecordEventType::kDelete, ""); // invalid key
-			CHECK(e(&ds));
+			CHECK(e(&ds) == OK_STRING);
 		}
 
 		// data should still exist
@@ -91,13 +91,13 @@ TEST_SUITE("RecordEvents") {
 
 		{
 			RecordEvent e(RecordEventType::kDelete, "child 1");
-			CHECK(e(&ds));
+			CHECK(e(&ds) == OK_STRING);
 			CHECK(!ds.getRecord("child 1"));
 		}
 
 		{
 			RecordEvent e(RecordEventType::kDelete, "child 2:child 3:child 4");
-			CHECK(e(&ds))
+			CHECK(e(&ds) == OK_STRING)
 			CHECK(!ds.getRecord("child 2:child 3:child 4"));
 			CHECK(!ds.getRecord("child 2:child 3")); // deletes empty parents
 			CHECK(ds.getRecord("child 2"));
@@ -108,7 +108,7 @@ TEST_SUITE("RecordEvents") {
 
 		{
 			RecordEvent e(RecordEventType::kDelete, "child 2");
-			CHECK(e(&ds));
+			CHECK(e(&ds) == OK_STRING);
 			CHECK(!ds.getRecord("child 2")); // children are deleted as well
 		}
 	};
@@ -118,37 +118,37 @@ TEST_SUITE("RecordEvents") {
 
 		{
 			RecordEvent e(RecordEventType::kSet, "", "test data"); // invalid key
-			CHECK(!e(&ds));
+			CHECK(e(&ds) == INVALID_PATH_STRING);
 			CHECK(ds.getValue("") != "test data");
 		}
 
 		{
 			RecordEvent e(RecordEventType::kSet, "child 1", "some key");
-			CHECK(e(&ds));
+			CHECK(e(&ds) == OK_STRING);
 			CHECK(ds.getValue("child 1") == "some key");
 		}
 
 		{
 			RecordEvent e(RecordEventType::kSet, "child 1", "some new key"); // overwrite previous value
-			CHECK(e(&ds));
+			CHECK(e(&ds) == OK_STRING);
 			CHECK(ds.getValue("child 1") == "some new key");
 		}
 
 		{
 			RecordEvent e(RecordEventType::kSet, "child 1:child 2", "some other key"); // child 1 is a string record, can't have children
-			CHECK(!e(&ds));
+			CHECK(e(&ds) == INVALID_PATH_STRING);
 			CHECK(ds.getValue("child 1:child 2") != "some other key");
 		}
 
 		{
 			RecordEvent e(RecordEventType::kSet, "child 2:child 3:child 4", "nested record creation");
-			CHECK(e(&ds));
+			CHECK(e(&ds) == OK_STRING);
 			CHECK(ds.getValue("child 2:child 3:child 4") == "nested record creation");
 		}
 
 		{
 			RecordEvent e(RecordEventType::kSet, "child 2:child 5", "child 5 record");
-			CHECK(e(&ds));
+			CHECK(e(&ds) == OK_STRING);
 			CHECK(ds.getValue("child 2:child 5") == "child 5 record");
 		}
 
