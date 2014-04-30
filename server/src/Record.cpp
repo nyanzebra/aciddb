@@ -51,7 +51,7 @@ Record& Record::operator=(Record&& rhs) {
 	return *this;
 }
 
-Record& Record::getChild(const char* key) {
+Record& Record::getChild(const std::string& key) {
 	if (_type != RecordType::kAssocArray && _type != RecordType::kArray) {
 		throw RecordException(Format("cannot access keys of children for records of type %s", RecordTypeStr(_type)));
 	}
@@ -70,7 +70,7 @@ Record& Record::getChild(const char* key) {
 	throw RecordException("child with key not found");
 }
 
-Record& Record::operator[](const char* key) {
+Record& Record::operator[](const std::string& key) {
 	if (_type != RecordType::kAssocArray && _type != RecordType::kArray) {
 		if (_type != RecordType::kUndefined) {
 			throw RecordException(Format("cannot access keys of children for records of type %s", RecordTypeStr(_type)));
@@ -80,12 +80,11 @@ Record& Record::operator[](const char* key) {
 
 	if (_type == RecordType::kAssocArray) {
 		return _assocChildren[key];
-	} else if (_type == RecordType::kArray) {
-		try {
-			return _arrayChildren.at(std::atoll(key));
-		} catch (...) {}
 	}
-
+	// _type must be RecordType::kArray
+	try {
+		return _arrayChildren.at(std::stoll(key));
+	} catch (...) {}
 	throw RecordException("array index key out of bounds");
 }
 
@@ -94,13 +93,6 @@ bool Record::operator==(const std::string& rhs) {
 		throw RecordException(Format("cannot compare string to record of type %s", RecordTypeStr(_type)));
 	}
 	return rhs == _val;
-}
-
-bool Record::operator==(const char* rhs) {
-	if (_type != RecordType::kString) {
-		throw RecordException(Format("cannot compare string to record of type %s", RecordTypeStr(_type)));
-	}
-	return strcmp(rhs, _val.c_str()) == 0;
 }
 
 void Record::push_back(std::string val) {
@@ -123,11 +115,11 @@ size_t Record::numChildren() const {
 	throw RecordException(Format("numChildren not applicable to records of type %s", RecordTypeStr(_type)));
 }
 
-void Record::removeChild(const char* key) {
+void Record::removeChild(const std::string& key) {
 	if (_type == RecordType::kArray) {
 		size_t i = 0;
 		try {
-			i = std::atoll(key);
+			i = std::stoll(key);
 			if (i < _arrayChildren.size()) {
 				_arrayChildren.erase(_arrayChildren.begin() + i);
 				return;

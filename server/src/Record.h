@@ -41,12 +41,11 @@ public:
 	Record& operator=(Record&& rhs);
 	Record& operator=(const Record& rhs) = delete;
 
-	Record& operator[](const char* key);
+	Record& operator[](const std::string& key);
 
-	Record& getChild(const char* key);
+	Record& getChild(const std::string& key);
 
 	bool operator==(const std::string& rhs);
-	bool operator==(const char* rhs);
 
 	void push_back(std::string val);
 
@@ -60,7 +59,7 @@ public:
 	 *
 	 * @param key Child key to remove
 	 */
-	void removeChild(const char* key);
+	void removeChild(const std::string& key);
 
 	void removeAllChildren();
 

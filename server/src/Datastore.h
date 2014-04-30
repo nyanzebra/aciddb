@@ -11,11 +11,11 @@ public:
 	Datastore() = default;
 	Datastore(std::istream& in);
 
-	const std::string& getValue(const char* key);
+	const std::string& getValue(const std::string& key);
 
 	bool write(std::ostream& out);
 
-	Record* getRecord(const char* path);
+	Record* getRecord(const std::string& path);
 
 	inline Record* getRoot() { return &_root; }
 
@@ -32,7 +32,7 @@ public:
 	 * @return Record representing the newly created path. If the path didn't exist,
 	 * the newly created record will have a RecordType::kUndefined type.
 	 */
-	Record* createPath(const char* path);
+	Record* createPath(const std::string& path);
 
 	/**
 	 * @brief Removes a record from the Datastore
@@ -43,12 +43,12 @@ public:
 	 *
 	 * @param path Path of record to remove
 	 */
-	void removeRecord(const char* path);
+	void removeRecord(const std::string& path);
 
 	inline bool good() const { return _good; }
 
 private:
-	std::vector<std::string> _tokenizePath(const char* path);
+	std::vector<std::string> _tokenizePath(const std::string&);
 
 	/**
 	 * @brief Returns an array of pointers representing records on a path.

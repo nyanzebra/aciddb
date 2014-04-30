@@ -42,33 +42,31 @@ bool Datastore::write(std::ostream& out) {
 	return false;
 }
 
-std::vector<std::string> Datastore::_tokenizePath(const char* path) {
-	const char* pos = path;
+std::vector<std::string> Datastore::_tokenizePath(const std::string& path) {
+	if (path.empty()) { return {}; } // invalid path
 
 	bool escaped = false;
 
 	std::vector<std::string> ret = {""};
 
-	while (*pos != '\0') {
+	for (auto&& c : path) {
 		if (escaped) {
-			switch (*pos) {
+			switch (c) {
 				case '\\':
 				case ':':
-					ret.back().push_back(*pos);
+					ret.back().push_back(c);
 			}
 			escaped = false;
-		} else if (*pos == '\\') {
+		} else if (c == '\\') {
 			escaped = true;
-		} else if (*pos == ':') {
-			// no part of the path should be empty
-			if (ret.back() == "") {
-				return {};
+		} else if (c == ':') {
+			if (ret.back().empty()) {
+				return {}; // no part of the path should be empty
 			}
 			ret.push_back("");
 		} else {
-			ret.back().push_back(*pos);
+			ret.back().push_back(c);
 		}
-		++pos;
 	}
 	// no part of the path should be empty
 	if (ret.size() == 1 && ret.back() == "") {
@@ -77,7 +75,7 @@ std::vector<std::string> Datastore::_tokenizePath(const char* path) {
 	return ret;
 }
 
-void Datastore::removeRecord(const char* path) {
+void Datastore::removeRecord(const std::string& path) {
 
 	auto tokens = _tokenizePath(path);
 	if (tokens.empty()) { return; } // invalid path
@@ -135,7 +133,7 @@ std::vector<Record*> Datastore::_recordsOnPath(const std::vector<std::string>& p
 	return ret;
 }
 
-const std::string& Datastore::getValue(const char* key) {
+const std::string& Datastore::getValue(const std::string& key) {
 	if (_good == false) {
 		return gEmptyString;
 	}
@@ -148,7 +146,7 @@ const std::string& Datastore::getValue(const char* key) {
 
 // TODO: method for checking records without creating records
 
-Record* Datastore::getRecord(const char* path) {
+Record* Datastore::getRecord(const std::string& path) {
 
 	// TODO: string operations like this are expensive, optimize?
 	auto tokens = _tokenizePath(path);
@@ -169,7 +167,7 @@ Record* Datastore::getRecord(const char* path) {
 	return r;
 }
 
-Record* Datastore::createPath(const char* path) {
+Record* Datastore::createPath(const std::string& path) {
 
 	// TODO: string operations like this are expensive, optimize?
 	auto tokens = _tokenizePath(path);
