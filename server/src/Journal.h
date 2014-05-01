@@ -1,9 +1,10 @@
 #pragma once
 
 #include <iostream>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include "RecordEvent.h"
-#include "../../shared/src/types.h"
 
 class Datastore;
 
@@ -36,6 +37,10 @@ public:
 	 */
 	bool applyToDatastore(Datastore* ds);
 
+	inline void close() { _dataStream = nullptr; }
 private:
 	std::iostream* _dataStream = nullptr;
+
+	typedef boost::archive::text_iarchive JournalInputArchiveType;
+	typedef boost::archive::text_oarchive JournalOutputArchiveType;
 };

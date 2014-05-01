@@ -2,9 +2,11 @@
 
 #include <sstream>
 
-#include "../../shared/src/types.h"
 #include "../src/RecordEvent.h"
 #include "../src/Datastore.h"
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 TEST_SUITE("RecordEvents") {
 
@@ -198,7 +200,7 @@ TEST_SUITE("RecordEvents") {
 		std::stringstream file;
 
 		{
-			OutputArchiveType oarch(file);
+			boost::archive::text_oarchive oarch(file);
 
 			RecordEvent e1(RecordEventType::kSet, "root:child1", "key1");
 			RecordEvent e2(RecordEventType::kSet, "root:child2:temp", "key2");
@@ -207,7 +209,7 @@ TEST_SUITE("RecordEvents") {
 		}
 
 		{
-			InputArchiveType iarch(file);
+			boost::archive::text_iarchive iarch(file);
 
 			std::vector<RecordEvent> events;
 

@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "../src/DataController.h"
+#include "../../shared/src/Transaction.h"
 
 TEST_SUITE("DataController") {
 

@@ -3,16 +3,20 @@
 #include <iostream>
 #include <unordered_map>
 
+#include "../../shared/src/Transaction.h"
+
 #include "Datastore.h"
 #include "Journal.h"
 #include "RecordEvent.H"
-#include "../../shared/src/types.h"
 
 class DataController {
 public:
 	DataController(std::iostream& datastoreSource, std::iostream& journalSource);
 
 	Result processTransaction(const Transaction& transaction);
+
+	void saveDB(std::ostream& datastoreDest);
+	void close();
 
 private:
 	Datastore _datastore;

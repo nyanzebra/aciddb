@@ -10,6 +10,8 @@
 #include <boost/asio.hpp>
 #include <future>
 
+#include "../../shared/src/Transaction.h"
+
 #include "DataController.h"
 #include "ClientConnection.h"
 
@@ -35,7 +37,12 @@ public:
 	 */
 	Result processTransaction(const Transaction& transaction);
 
+	void addClient(std::shared_ptr<ClientConnection> client);
+	void removeClient(std::shared_ptr<ClientConnection> client);
+
 private:
+	std::string _dsFilename;
+	std::string _jFilename;
 	std::fstream _dsFile;
 	std::fstream _jFile;
 	DataController _dataController;
@@ -49,6 +56,11 @@ private:
 	std::thread _transactionThread;
 	std::thread _networkThread;
 	std::condition_variable _transactionNotify;
+
+	std::vector<std::shared_ptr<ClientConnection>> _clients;
+	std::mutex _clientsMutex;
+
+	void _killClients();
 
 	void _processTransactionsThreadEntry();
 

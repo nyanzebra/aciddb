@@ -7,6 +7,14 @@ DataController::DataController(std::iostream& datastoreSource, std::iostream& jo
 	, _journal(&journalSource)
 {}
 
+void DataController::saveDB(std::ostream& datastoreDest) {
+	_datastore.write(datastoreDest);
+}
+
+void DataController::close() {
+	_journal.close();
+}
+
 Result DataController::processTransaction(const Transaction& transaction) {
 
 	Result results(transaction.size(), "NOT EXECUTED");

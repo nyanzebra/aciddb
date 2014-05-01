@@ -24,13 +24,12 @@ int main (int argc, char const *argv[]) {
 
 	cli->subscribe(interpreter);
 	cli->welcome();
+	cli->connect("localhost");
 
 	if (!context.connect("localhost", 5999)) {
 		cli->writeLine("unable to connect to localhost");
 		return 1;
 	}
-
-	cli->connect("localhost");
 
 	cli->awaitInput();
 

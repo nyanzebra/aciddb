@@ -10,7 +10,7 @@ void Journal::writeTransaction(const std::vector<RecordEvent>& events) {
 	std::stringstream ss;
 
 	{
-		OutputArchiveType oarch(ss);
+		boost::archive::text_oarchive oarch(ss);
 		oarch << events;
 	}
 
@@ -26,7 +26,7 @@ bool Journal::applyToDatastore(Datastore* ds) {
 	std::vector<std::vector<RecordEvent>> events;
 
 	try {
-		InputArchiveType iarch(*_dataStream);
+		boost::archive::text_iarchive iarch(*_dataStream);
 		while (true) {
 			std::vector<RecordEvent> e;
 			iarch >> e;

@@ -2,7 +2,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "../../shared/src/types.h"
 #include "../src/Datastore.h"
 #include "../src/Record.h"
 
@@ -14,22 +13,22 @@ TEST_SUITE("Datastore") {
 
 		// build test file
 		{
-			OutputArchiveType oarch(infile);
-		
-			Record root;
+			Datastore ds;
+
+			auto root = ds.getRoot();
 	
-			root["child 1"].push_back("e0");
-			root["child 1"].push_back("e1");
-			root["child 1"].push_back("e2");
-			root["child 1"].push_back("e3");
+			(*root)["child 1"].push_back("e0");
+			(*root)["child 1"].push_back("e1");
+			(*root)["child 1"].push_back("e2");
+			(*root)["child 1"].push_back("e3");
 	
-			root["child 2"] = "string";
+			(*root)["child 2"] = "string";
 	
-			root["child 3"]["key 1"] = "key 1";
-			root["child 3"]["key 2"] = "key 2";
-			root["child 3"]["child 4"]["child 5"] = "key 1";
+			(*root)["child 3"]["key 1"] = "key 1";
+			(*root)["child 3"]["key 2"] = "key 2";
+			(*root)["child 3"]["child 4"]["child 5"] = "key 1";
 	
-			oarch << root;
+			ds.write(infile);
 		}
 
 		Datastore ds1(infile);

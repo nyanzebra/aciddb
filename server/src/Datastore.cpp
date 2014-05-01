@@ -1,6 +1,5 @@
 #include "Datastore.h"
 
-#include "../../shared/src/types.h"
 #include "../../shared/src/logging.h"
 
 #include <vector>
@@ -19,7 +18,7 @@ Datastore::Datastore(std::istream& in) {
 		}
 		in.seekg(pos);
 
-		InputArchiveType iarch(in);
+		DatastoreInputArchiveType iarch(in);
 		iarch >> _root;
 	} catch (std::exception& e) {
 		Logf(kLogLevelInfo, "unable to parse datastore input stream");
@@ -34,7 +33,7 @@ bool Datastore::write(std::ostream& out) {
 
 	try {
 
-		OutputArchiveType oarch(out);
+		DatastoreOutputArchiveType oarch(out);
 		oarch << _root;
 
 		return true;

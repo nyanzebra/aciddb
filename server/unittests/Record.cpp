@@ -2,8 +2,10 @@
 #include <sstream>
 #include <iostream>
 
-#include "../../shared/src/types.h"
 #include "../src/Record.h"
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 TEST_SUITE("Record") {
 
@@ -95,7 +97,7 @@ TEST_SUITE("Record") {
 		std::stringstream file;
 
 		{
-			OutputArchiveType oarch(file);
+			boost::archive::text_oarchive oarch(file);
 
 			Record root;
 
@@ -113,7 +115,7 @@ TEST_SUITE("Record") {
 			oarch << root;
 		}
 
-		InputArchiveType iarch(file);
+		boost::archive::text_iarchive iarch(file);
 
 		{
 			Record root;

@@ -2,6 +2,9 @@
 
 #include <iosfwd>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include "Record.h"
 #include "RecordEvent.h"
 
@@ -50,6 +53,9 @@ public:
 
 private:
 	std::vector<std::string> _tokenizePath(const std::string&);
+
+	typedef boost::archive::text_iarchive DatastoreInputArchiveType;
+	typedef boost::archive::text_oarchive DatastoreOutputArchiveType;
 
 	/**
 	 * @brief Returns an array of pointers representing records on a path.

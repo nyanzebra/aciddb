@@ -1,19 +1,24 @@
-#include "ClientConnection.h"
-
 #include <functional>
 #include <chrono>
+#include <arpa/inet.h>
 
 #include "../../shared/src/common.h"
 #include "../../shared/src/logging.h"
+#include "../../shared/src/packets.h"
+#include "ClientConnection.h"
 #include "Database.h"
 
 ClientConnection::ClientConnection(boost::asio::io_service& service, Database* db)
 	: _db(db)
+	, _service(service)
 	, _socket(service)
-{}
+{
+	// TODO: keepalive?
+}
 
 ClientConnection::ClientConnection(ClientConnection&& source)
 	: _db(source._db)
+	, _service(source._service)
 	, _socket(std::move(source._socket))
 {
 	source._db = nullptr;
@@ -21,64 +26,100 @@ ClientConnection::ClientConnection(ClientConnection&& source)
 
 ClientConnection::~ClientConnection() {
 	_closeSocket();
+	if (_connectionThread.joinable()) {
+		_connectionThread.join();
+	}
 }
 
-void ClientConnection::start()
-try {
-	if (!_db) { return; }
+void ClientConnection::_threadEntry() {
+	try {
+		while (_continueRunning) {
+			auto txn = _getTransaction();
 
-	std::stringstream buffer;
+			auto result = _db->processTransaction(txn);
 
-	while (true) {
-		boost::array<char, 128> buf;
-		boost::system::error_code error;
+			_sendResult(result);
 
-		std::cout << "reading" << std::endl;
-		size_t len = _socket.read_some(boost::asio::buffer(buf), error);
-		std::cout << "read" << std::endl;
-
-		if (error == boost::asio::error::eof) {
-			std::cout << "eof" << std::endl;
-			break;
-		} else if (error) {
-			throw boost::system::system_error(error); // Some other error.
 		}
-
-		buffer.write(buf.data(), len);
-
-		std::cout.write(buf.data(), len);
-
-		// TODO: check buffer?
+	} catch(std::exception &e) {
+		if (_continueRunning) {
+			Logf(kLogLevelDebug, e.what());
+		}
 	}
 
-	// try {
-	// 	OutputArchiveType oarch(ss);
+	// this thread needs to finish before the client can destruct. Kill the client from the service thread.
+	_service.post([=]() { _db->removeClient(shared_from_this()); });
+}
 
-	// 	Transaction txn;
-		
-	// 	oarch >> txn;
+Transaction ClientConnection::_getTransaction() {
+	PacketHeader header;
 
-	// 	Result result = _db->processTransaction(txn);
+	// TODO: refactor this
 
-	// 	std::stringstream resultStream;
-	// 	InputArchiveType iarch(resultStream);
+	boost::asio::read(_socket, boost::asio::buffer(&header, sizeof(header)));
 
-	// 	iarch << result;
+	PacketType type = (PacketType)ntohl(header.type);
+	uint32_t numStatements = ntohl(header.numStatements);
 
-	// 	_socket.send(resultStream);
+	if (type != kPacketTypeTransaction) {
+		throw std::runtime_error("invalid packet type");
+	}
 
-	// } catch (...) {
-	// 	Result r({"server could not parse transaction"})
+	Transaction txn;
 
-	// 	std::stringstream resultStream;
-	// 	InputArchiveType iarch(resultStream);
+	for (size_t i = 0; i < numStatements; ++i) {
+		uint32_t length = 0;
+		boost::asio::read(_socket, boost::asio::buffer(&length, sizeof(length)));
+		length = ntohl(length);
 
-	// 	iarch << result;
-		
-	// 	_socket.write(resultStream);
-	// }
-} catch(std::exception &e) {
-	std::cout << e.what() << std::endl;
+		// TODO: sanity check this stuff
+
+		std::string statement;
+		statement.resize(length);
+
+		boost::asio::read(_socket, boost::asio::buffer(&statement[0], length));
+		txn.emplace_back(std::move(statement));
+	}
+
+	return txn;
+}
+
+void ClientConnection::_sendResult(Result result) {
+	std::vector<boost::asio::const_buffer> buffers;
+
+	// TODO: refactor this
+
+	PacketHeader header;
+	std::vector<uint32_t> sizes;
+
+	buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
+
+	// construct a series of buffers that, when read sequentially, will produce the correct packet.
+	for (auto&& statement : result) {
+		sizes.push_back(htonl(statement.size()));
+		buffers.emplace_back(boost::asio::buffer(&sizes.back(), sizeof(sizes.back())));
+		buffers.emplace_back(boost::asio::buffer(statement));
+	}
+
+	auto numStatements = result.size();
+
+	if (numStatements > std::numeric_limits<uint32_t>::max()) {
+		throw std::runtime_error("overflow in buffer size");
+	}
+
+	header.type = (PacketType)htonl(kPacketTypeResult);
+	header.numStatements = htonl((uint32_t)numStatements);
+
+	boost::asio::write(_socket, buffers);
+}
+
+void ClientConnection::start() {
+	if (!_db) { return; }
+	_connectionThread = std::thread(std::bind(&ClientConnection::_threadEntry, this));
+}
+
+void ClientConnection::stop() {
+	_continueRunning = false;
 	_closeSocket();
 }
 
