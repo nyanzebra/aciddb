@@ -3,6 +3,8 @@
 #include <thread>
 #include <chrono>
 
+#include "../../cpp-connector/src/DBContext.h"
+
 #include "CLI.h"
 #include "Interpreter.h"
 
@@ -16,11 +18,19 @@ int main (int argc, char const *argv[]) {
 
 	auto cli = std::make_shared<CLI>();
 
-	auto interpreter = std::make_shared<Interpreter>(cli);
+	DBContext context;
+
+	auto interpreter = std::make_shared<Interpreter>(cli, &context);
 
 	cli->subscribe(interpreter);
+	cli->welcome();
 
-	cli->header();
+	if (!context.connect("localhost", 5999)) {
+		cli->writeLine("unable to connect to localhost");
+		return 1;
+	}
+
+	cli->connect("localhost");
 
 	cli->awaitInput();
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iosfwd>
+
 #include "Record.h"
 #include "RecordEvent.h"
 

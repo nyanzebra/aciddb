@@ -30,7 +30,10 @@ void CLI::processInput() {
 	}
 }
 
-void CLI::header() {
+void CLI::welcome() {
 	std::cout << "AcidDB CLI v" ACIDDB_CLI_VERSION << std::endl;
-	std::cout << "connecting to localhost" << std::endl;
+}
+
+void CLI::connect(const std::string& address) {
+	std::cout << "connecting to " << address << std::endl;
 }

@@ -1,5 +1,5 @@
 lib demo-lib : [ glob src/*.cpp : src/main.cpp ] ../shared//shared ../cpp-connector//cpp-connector : <link>static ;
 
-exe demo : demo-lib src/main.cpp ../shared//shared ;
+exe demo : demo-lib src/main.cpp ../shared//shared ../cpp-connector//cpp-connector ;
 
 install . : demo ;

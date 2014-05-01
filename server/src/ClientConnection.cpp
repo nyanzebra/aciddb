@@ -4,47 +4,89 @@
 #include <chrono>
 
 #include "../../shared/src/common.h"
+#include "../../shared/src/logging.h"
+#include "Database.h"
 
-ClientConnection::ClientConnection()
-	: _clientThread(std::bind(&ClientConnection::threadEntry, this))
+ClientConnection::ClientConnection(boost::asio::io_service& service, Database* db)
+	: _db(db)
+	, _socket(service)
 {}
 
+ClientConnection::ClientConnection(ClientConnection&& source)
+	: _db(source._db)
+	, _socket(std::move(source._socket))
+{
+	source._db = nullptr;
+}
+
 ClientConnection::~ClientConnection() {
-	stopAndWait();
+	_closeSocket();
 }
 
-void ClientConnection::threadEntry() {
+void ClientConnection::start()
+try {
+	if (!_db) { return; }
 
-	while (_continueRunning) {
-		std::this_thread::sleep_for(1_s);
-		
-		Transaction txn;
+	std::stringstream buffer;
 
-		// TODO: get actual transactions
-		txn = {"set x y", "get x"};
+	while (true) {
+		boost::array<char, 128> buf;
+		boost::system::error_code error;
 
-		if (!txn.empty()) {
-			for (auto&& obs : _observers) {
-				auto result = obs->receivedTransaction(txn);
-				// TODO: send result back
-			}
+		std::cout << "reading" << std::endl;
+		size_t len = _socket.read_some(boost::asio::buffer(buf), error);
+		std::cout << "read" << std::endl;
+
+		if (error == boost::asio::error::eof) {
+			std::cout << "eof" << std::endl;
+			break;
+		} else if (error) {
+			throw boost::system::system_error(error); // Some other error.
 		}
+
+		buffer.write(buf.data(), len);
+
+		std::cout.write(buf.data(), len);
+
+		// TODO: check buffer?
 	}
 
+	// try {
+	// 	OutputArchiveType oarch(ss);
+
+	// 	Transaction txn;
+		
+	// 	oarch >> txn;
+
+	// 	Result result = _db->processTransaction(txn);
+
+	// 	std::stringstream resultStream;
+	// 	InputArchiveType iarch(resultStream);
+
+	// 	iarch << result;
+
+	// 	_socket.send(resultStream);
+
+	// } catch (...) {
+	// 	Result r({"server could not parse transaction"})
+
+	// 	std::stringstream resultStream;
+	// 	InputArchiveType iarch(resultStream);
+
+	// 	iarch << result;
+		
+	// 	_socket.write(resultStream);
+	// }
+} catch(std::exception &e) {
+	std::cout << e.what() << std::endl;
+	_closeSocket();
 }
 
-void ClientConnection::stopAndWait() {
-	_continueRunning = false;
-
-	if (_clientThread.joinable()) {
-		_clientThread.join();
-	}
-}
-
-void ClientConnection::stop() {
-	_continueRunning = false;
-}
-
-void ClientConnection::subscribe(Observer* observer) {
-	_observers.push_back(observer);
+void ClientConnection::_closeSocket() {
+	try {
+		_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+	} catch (...) {}
+	try {
+		_socket.close();
+	} catch (...) {}
 }

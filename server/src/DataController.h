@@ -6,7 +6,7 @@
 #include "Datastore.h"
 #include "Journal.h"
 #include "RecordEvent.H"
-#include "types.h"
+#include "../../shared/src/types.h"
 
 class DataController {
 public:

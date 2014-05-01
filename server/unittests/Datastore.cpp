@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "../src/types.h"
+#include "../../shared/src/types.h"
 #include "../src/Datastore.h"
 #include "../src/Record.h"
 

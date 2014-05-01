@@ -1,31 +1,24 @@
 #pragma once
 
-#include <memory>
-#include <thread>
+#include <boost/asio.hpp>
 
-#include "types.h"
+#include "../../shared/src/types.h"
 
-class ClientConnection : public std::enable_shared_from_this<ClientConnection> {
+class Database;
+
+class ClientConnection {
 public:
-	class Observer {
-	public:
-		virtual Result receivedTransaction(const Transaction& transaction) = 0;
-	};
-
-	ClientConnection();
+	ClientConnection(boost::asio::io_service& socket, Database* db);
+	ClientConnection(ClientConnection&& source);
 	~ClientConnection();
 
-	void threadEntry();
+	void start();
 
-	void stopAndWait();
-	void stop();
-
-	void subscribe(Observer* observer);
+	boost::asio::ip::tcp::socket& socket() { return _socket; }
 
 private:
-	bool _continueRunning = true;
+	Database* _db;
+	boost::asio::ip::tcp::socket _socket;
 
-	std::thread _clientThread;
-
-	std::vector<Observer*> _observers;
+	void _closeSocket();
 };

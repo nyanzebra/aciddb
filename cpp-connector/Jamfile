@@ -1,4 +1,4 @@
-lib cpp-connector : [ glob src/*.cpp ] :
+lib cpp-connector : [ glob src/*.cpp ] ../shared//shared :
 	<link>static
 	<toolset>darwin:<cxxflags>"-std=c++11 -fcolor-diagnostics"
 	<toolset>gcc:<cxxflags>"-std=c++11"

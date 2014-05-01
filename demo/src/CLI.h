@@ -20,7 +20,8 @@ public:
 	
 	void awaitInput();
 	void processInput();
-	void header();
+	void welcome();
+	void connect(const std::string& address);
 
 private:
 	std::vector<std::shared_ptr<Observer>> _observers;

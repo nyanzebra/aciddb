@@ -1,6 +1,6 @@
 #include "Datastore.h"
-#include "types.h"
 
+#include "../../shared/src/types.h"
 #include "../../shared/src/logging.h"
 
 #include <vector>

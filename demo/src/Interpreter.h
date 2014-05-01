@@ -2,12 +2,15 @@
 
 #include "CLI.h"
 
-class Interpreter : public CLI::Observer {
-private:
-	std::shared_ptr<CLI> _cli;
+class DBContext;
 
+class Interpreter : public CLI::Observer {
 public:
-	Interpreter(std::shared_ptr<CLI> cli) : _cli(cli) {}
+	Interpreter(std::shared_ptr<CLI> cli, DBContext* context);
 
 	void newInput(std::string line);
+
+private:
+	std::shared_ptr<CLI> _cli;
+	DBContext* _context;
 };

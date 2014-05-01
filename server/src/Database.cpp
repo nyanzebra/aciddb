@@ -1,5 +1,7 @@
 #include "Database.h"
 
+#include <future>
+
 #include "../../shared/src/common.h"
 #include "../../shared/src/logging.h"
 
@@ -7,6 +9,7 @@ Database::Database(int externalPort, const std::string& dsFilename, const std::s
 	: _dsFile(dsFilename, std::ios_base::in)
 	, _jFile(jFilename)
 	, _dataController(_dsFile, _jFile)
+	, _acceptor(_tcpService, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), externalPort))
 {}
 
 Database::~Database() {
@@ -18,36 +21,24 @@ void Database::start() {
 	_networkThread = std::thread(std::bind(&Database::_listenThreadEntry, this));
 }
 
-Result Database::receivedTransaction(const Transaction& transaction) {
+Result Database::processTransaction(const Transaction& transaction) {
 
-	std::condition_variable cv;
-	std::mutex m;
-	Result ret;
-
-	std::unique_lock<std::mutex> resultLock(m);
+	std::promise<Result> p;
+	auto futureResult = p.get_future();
 
 	{
 		std::unique_lock<std::mutex> txnLock(_transactionsMutex);
-
-		_transactionQueue.emplace_back(
-			transaction,
-			[&](Result result) {
-				std::unique_lock<std::mutex> lock(m);
-				ret = std::move(result);
-				lock.unlock();
-				cv.notify_one();
-			}
-		);
+		_transactionQueue.emplace_back(transaction, std::move(p));
 	}
 
 	while (_continueRunning) {
-		auto status = cv.wait_for(resultLock, 1_s);
-		if (status != std::cv_status::timeout) {
+		auto status = futureResult.wait_for(1_s);
+		if (status == std::future_status::ready) {
 			break;
 		}
 	}
 
-	return ret;
+	return futureResult.get();
 }
 
 void Database::stop() {
@@ -56,6 +47,7 @@ void Database::stop() {
 
 void Database::stopAndWait() {
 	_continueRunning = false;
+	_tcpService.stop();
 
 	if (_networkThread.joinable()) {
 		_networkThread.join();
@@ -88,26 +80,37 @@ void Database::_processTransactionsThreadEntry() {
 		
 		for (auto&& txn : toProcess) {
 			auto result = _dataController.processTransaction(txn.first);
-			txn.second(std::move(result));
+			txn.second.set_value(std::move(result));
 		}
 		toProcess.clear();
 	}
 
 }
 
+void Database::_startAccept() {
+	auto client = std::make_shared<ClientConnection>(_tcpService, this);
+	_acceptor.async_accept(
+		client->socket(),
+		std::bind(
+			&Database::_handleConnect, this,
+			client,
+			std::placeholders::_1)
+	);
+}
+
+void Database::_handleConnect(std::shared_ptr<ClientConnection> client, const boost::system::error_code& error) {
+	Logf(kLogLevelDebug, "handle connect");
+	if (!error) {
+		client->start();
+	}
+	_startAccept();
+}
+
 void Database::_listenThreadEntry() {
-	while (_continueRunning) {
-		std::this_thread::sleep_for(1_s);
-		// TODO: receive network connections
-	}
 
-	Logf(kLogLevelDebug, "killing client threads");
+	_startAccept();
 
-	for (auto&& c : _clients) {
-		c->stop();
-	}
-	for (auto&& c : _clients) {
-		c->stopAndWait();
-	}
+	_tcpService.run();
+
 	Logf(kLogLevelDebug, "client threads disconnected");
 }
