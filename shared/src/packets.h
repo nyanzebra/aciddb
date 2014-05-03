@@ -1,11 +1,10 @@
 #pragma once
 
 enum PacketType : uint32_t {
-	kPacketTypeTransaction = 0x1,
-	kPacketTypeResult      = 0x2,
+	kPacketTypePrefixedStrings = 0x1,
 };
 
 struct PacketHeader {
 	PacketType type;
-	uint32_t numStatements;
+	uint32_t length;
 };

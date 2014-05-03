@@ -52,65 +52,11 @@ void ClientConnection::_threadEntry() {
 }
 
 Transaction ClientConnection::_getTransaction() {
-	PacketHeader header;
-
-	// TODO: refactor this
-
-	boost::asio::read(_socket, boost::asio::buffer(&header, sizeof(header)));
-
-	PacketType type = (PacketType)ntohl(header.type);
-	uint32_t numStatements = ntohl(header.numStatements);
-
-	if (type != kPacketTypeTransaction) {
-		throw std::runtime_error("invalid packet type");
-	}
-
-	Transaction txn;
-
-	for (size_t i = 0; i < numStatements; ++i) {
-		uint32_t length = 0;
-		boost::asio::read(_socket, boost::asio::buffer(&length, sizeof(length)));
-		length = ntohl(length);
-
-		// TODO: sanity check this stuff
-
-		std::string statement;
-		statement.resize(length);
-
-		boost::asio::read(_socket, boost::asio::buffer(&statement[0], length));
-		txn.emplace_back(std::move(statement));
-	}
-
-	return txn;
+	return ReceiveStrings(_socket);
 }
 
 void ClientConnection::_sendResult(Result result) {
-	std::vector<boost::asio::const_buffer> buffers;
-
-	// TODO: refactor this
-
-	PacketHeader header;
-	std::vector<uint32_t> sizes;
-
-	buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
-
-	// construct a series of buffers that, when read sequentially, will produce the correct packet.
-	for (auto&& statement : result) {
-		sizes.push_back(htonl(statement.size()));
-		buffers.emplace_back(boost::asio::buffer(&sizes.back(), sizeof(sizes.back())));
-		buffers.emplace_back(boost::asio::buffer(statement));
-	}
-
-	auto numStatements = result.size();
-
-	if (numStatements > std::numeric_limits<uint32_t>::max()) {
-		throw std::runtime_error("overflow in buffer size");
-	}
-
-	header.type = (PacketType)htonl(kPacketTypeResult);
-	header.numStatements = htonl((uint32_t)numStatements);
-
-	boost::asio::write(_socket, buffers);
+	SendStrings(_socket, result);
 }
 
 void ClientConnection::start() {

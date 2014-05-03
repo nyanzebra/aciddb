@@ -25,7 +25,7 @@ Database::~Database() {
 
 	// TODO: this really belongs to datacontroller
 	// TODO: make this operation work properly
-	
+
 	std::ofstream ofs(_dsFilename + ".temp");
 	_dataController.saveDB(ofs);
 	_dataController.close();
@@ -107,7 +107,7 @@ void Database::_killClients() {
 	Logf(kLogLevelDebug, "killing clients");
 	{
 		std::lock_guard<std::mutex> l(_clientsMutex);
-	
+
 		for (auto&& c : _clients) {
 			c->stop();
 		}
@@ -141,7 +141,7 @@ void Database::_processTransactionsThreadEntry() {
 			std::move(_transactionQueue.begin(), _transactionQueue.end(), toProcess.begin() + s);
 			_transactionQueue.clear();
 		}
-		
+
 		for (auto&& txn : toProcess) {
 			auto result = _dataController.processTransaction(txn.first);
 			txn.second.set_value(std::move(result));

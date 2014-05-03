@@ -34,7 +34,7 @@ bool ParseCLIArgs(int argc, char* argv[]
 		std::cout << desc << std::endl;
 		return false;
 	}
-	
+
 	po::notify(vm);
 	return true;
 
@@ -70,16 +70,19 @@ int main(int argc, char* argv[]) {
 
 	Logf("starting aciddb server, v" SERVER_VERSION);
 
-	Database db(listenPort, dsFilename, jFilename);
+	try {
+		Database db(listenPort, dsFilename, jFilename);
 
-	db.start();
+		db.start();
 
-	io_service.run();
+		io_service.run();
 
-	Logf(kLogLevelInfo, "stopping database service");
+		Logf(kLogLevelInfo, "stopping database service");
 
-	db.stopAndWait();
-	Logf("goodbye");
+		db.stopAndWait();
+	} catch (std::exception& e) {
+		Logf(kLogLevelError, "unable to initialize database: %s", e.what());
+	}
 
 	return 0;
 }
