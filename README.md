@@ -29,7 +29,7 @@ Use your favorite package manager to install boost build. On Ubuntu, it's found 
 Building AcidDB
 ===============
 
-Clone this repo with submodules to a directory of your choosing, run the `build-boost.sh` script in the root directory to install the relevant boost libraries and headers to the local `deps\lib` and `deps\include` directories. In a nutshell, execute the following commands:
+Clone this repo *recursively* with submodules to a directory of your choosing, run the `build-boost.sh` script in the root directory to install the relevant boost libraries and headers to the local `deps\lib` and `deps\include` directories. In a nutshell, execute the following commands:
 
     git clone --recursive git@github.com:vmrob/aciddb.git
     cd aciddb
