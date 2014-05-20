@@ -17,13 +17,11 @@ enum class RecordType : uint8_t {
 };
 
 inline constexpr const char* RecordTypeStr(RecordType type) {
-	switch(type) {
-		case RecordType::kAssocArray:	return "associative array";
-		case RecordType::kArray:		return "array";
-		case RecordType::kString:		return "string";
-		case RecordType::kUndefined:	return "undefined";
-	}
-	return "";
+	return type == RecordType::kAssocArray ? "associative array" :
+		   type == RecordType::kArray ? "array" :
+		   type == RecordType::kString ? "string" :
+		   type == RecordType::kUndefined ? "undefined" :
+		   "";
 }
 
 class RecordException : public std::runtime_error {

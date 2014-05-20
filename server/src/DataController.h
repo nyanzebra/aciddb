@@ -7,7 +7,7 @@
 
 #include "Datastore.h"
 #include "Journal.h"
-#include "RecordEvent.H"
+#include "RecordEvent.h"
 
 class DataController {
 public:
