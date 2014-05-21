@@ -1,13 +1,5 @@
 #pragma once
 
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/level.hpp>
-#include <boost/serialization/tracking.hpp>
-#include <boost/serialization/vector.hpp>
-
-#include <string>
-#include <vector>
-
 #define ERROR_STRING          "ERROR"
 #define INTERNAL_ERROR_STRING "INTERNAL ERROR"
 #define OK_STRING             "OK"

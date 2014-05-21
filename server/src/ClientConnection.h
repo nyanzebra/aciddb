@@ -1,10 +1,5 @@
 #pragma once
 
-#include <boost/asio.hpp>
-#include <thread>
-
-#include "../../shared/src/Transaction.h"
-
 class Database;
 
 class ClientConnection : public std::enable_shared_from_this<ClientConnection> {

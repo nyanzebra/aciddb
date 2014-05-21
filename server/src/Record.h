@@ -1,14 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <unordered_map>
-#include <string>
-#include <exception>
-
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/vector.hpp>
-
 enum class RecordType : uint8_t {
 	kUndefined	= 0x0,
 	kAssocArray	= 0x1,
@@ -65,7 +56,7 @@ public:
 
 private:
 	RecordType _type = RecordType::kUndefined;
-	std::unordered_map<std::string, Record> _assocChildren;
+	std::unordered_map<std::string, std::unique_ptr<Record>> _assocChildren;
 	std::vector<Record> _arrayChildren;
 	std::string _val;
 

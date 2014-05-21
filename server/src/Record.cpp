@@ -1,5 +1,8 @@
+#ifndef SERVER_PCH_H
+#include "pch.h"
+#endif
+
 #include "Record.h"
-#include "../../shared/src/utility.h"
 
 const Record gNullRecord;
 
@@ -59,7 +62,7 @@ Record& Record::getChild(const std::string& key) {
 	if (_type == RecordType::kAssocArray) {
 		auto it = _assocChildren.find(key);
 		if (it != _assocChildren.end()) {
-			return it->second;
+			return *(it->second);
 		}
 	} else if (_type == RecordType::kArray) {
 		try {
@@ -79,7 +82,7 @@ Record& Record::operator[](const std::string& key) {
 	}
 
 	if (_type == RecordType::kAssocArray) {
-		return _assocChildren[key];
+		return *(_assocChildren[key]);
 	}
 	// _type must be RecordType::kArray
 	try {
