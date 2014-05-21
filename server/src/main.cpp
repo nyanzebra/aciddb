@@ -1,9 +1,7 @@
-#include <iostream>
+#ifndef SERVER_PCH_H
+#include "pch.h"
+#endif
 
-#include <boost/asio.hpp>
-#include <boost/program_options.hpp>
-
-#include "../../shared/src/logging.h"
 #include "Database.h"
 
 #define SERVER_VERSION "0.0.1"

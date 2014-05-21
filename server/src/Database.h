@@ -1,19 +1,6 @@
 #pragma once
-
-#include <fstream>
-#include <vector>
-#include <memory>
-#include <thread>
-#include <mutex>
-#include <deque>
-#include <condition_variable>
-#include <boost/asio.hpp>
-#include <future>
-
-#include "../../shared/src/Transaction.h"
-
-#include "DataController.h"
 #include "ClientConnection.h"
+#include "DataController.h"
 
 class Database {
 public:

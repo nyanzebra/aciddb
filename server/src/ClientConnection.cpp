@@ -1,10 +1,6 @@
-#include <functional>
-#include <chrono>
-#include <arpa/inet.h>
-
-#include "../../shared/src/common.h"
-#include "../../shared/src/logging.h"
-#include "../../shared/src/packets.h"
+#ifndef SERVER_PCH_H
+#include "pch.h"
+#endif
 #include "ClientConnection.h"
 #include "Database.h"
 

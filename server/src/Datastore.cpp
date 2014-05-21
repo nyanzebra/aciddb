@@ -1,8 +1,8 @@
+#ifndef SERVER_PCH_H
+#include "pch.h"
+#endif
+
 #include "Datastore.h"
-
-#include "../../shared/src/logging.h"
-
-#include <vector>
 
 static const std::string gEmptyString;
 

@@ -1,9 +1,7 @@
+#ifndef SERVER_PCH_H
+#include "pch.h"
+#endif
 #include "Database.h"
-
-#include <future>
-
-#include "../../shared/src/common.h"
-#include "../../shared/src/logging.h"
 
 Database::Database(int externalPort, const std::string& dsFilename, const std::string& jFilename)
 	: _dsFilename(dsFilename)

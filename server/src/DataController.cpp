@@ -1,6 +1,8 @@
+#ifndef SERVER_PCH_H
+#include "pch.h"
+#endif
 #include "DataController.h"
-
-#include "../../shared/src/utility.h"
+#include "RecordEvent.h"
 
 DataController::DataController(std::iostream& datastoreSource, std::iostream& journalSource)
 	: _datastore(datastoreSource)

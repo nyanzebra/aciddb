@@ -1,5 +1,6 @@
-#include <cassert>
-
+#ifndef SERVER_PCH_H
+#include "pch.h"
+#endif
 #include "RecordEvent.h"
 #include "Datastore.h"
 

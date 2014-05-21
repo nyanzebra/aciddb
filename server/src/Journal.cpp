@@ -1,6 +1,7 @@
+#ifndef SERVER_PCH_H
+#include "pch.h"
+#endif
 #include "Journal.h"
-
-#include <sstream>
 
 void Journal::writeTransaction(const std::vector<RecordEvent>& events) {
 	if (!_dataStream) {

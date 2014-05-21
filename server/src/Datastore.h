@@ -1,12 +1,5 @@
 #pragma once
-
-#include <iosfwd>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-
 #include "Record.h"
-#include "RecordEvent.h"
 
 #define RECORD_KEY_SEPARATOR ':'
 
