@@ -5,6 +5,7 @@
 #include "../../shared/src/packets.h"
 
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/unordered_map.hpp>
 #include <boost/asio.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
