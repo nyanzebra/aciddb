@@ -2,10 +2,8 @@
 #include <sstream>
 #include <iostream>
 
+#include "../src/pch.h"
 #include "../src/Record.h"
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 TEST_SUITE("Record") {
 

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "../src/pch.h"
 #include "../src/Datastore.h"
 #include "../src/Record.h"
 
