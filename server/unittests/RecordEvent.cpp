@@ -2,11 +2,9 @@
 
 #include <sstream>
 
+#include "../src/pch.h"
 #include "../src/RecordEvent.h"
 #include "../src/Datastore.h"
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 TEST_SUITE("RecordEvents") {
 

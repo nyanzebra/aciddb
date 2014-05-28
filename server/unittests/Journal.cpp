@@ -1,6 +1,7 @@
 #include <testing.h>
 #include <sstream>
 
+#include "../src/pch.h"
 #include "../src/Journal.h"
 #include "../src/RecordEvent.h"
 #include "../src/Datastore.h"

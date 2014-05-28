@@ -66,4 +66,5 @@ std::string RecordEvent::operator()(Datastore* ds) const {
 			return OK_STRING;
 		}
 	}
+	return "";
 }
