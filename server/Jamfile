@@ -1,4 +1,8 @@
-lib server-lib : pch [ glob src/*.cpp : src/main.cpp ] ../shared//shared : <link>static ;
+lib server-lib : pch [ glob src/*.cpp : src/main.cpp ] ../shared//shared :
+	<link>static
+: :
+	<toolset>gcc:<lib>pthread
+;
 
 import pch ;
 cpp-pch pch : src/pch.h :
