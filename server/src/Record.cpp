@@ -1,5 +1,8 @@
+#ifndef SERVER_PCH_H
+#include "pch.h"
+#endif
+
 #include "Record.h"
-#include "../../shared/src/utility.h"
 
 const Record gNullRecord;
 
@@ -12,14 +15,14 @@ Record::Record(Record&& source) {
 
 	_val = std::move(source._val);
 
-	source._assocChildren.clear();
-	source._arrayChildren.clear();
-	source._val.clear();
+	source._assocChildren = nullptr;
+	source._arrayChildren = nullptr;
+	source._val = nullptr;
 }
 
 Record::Record(std::string source) {
 	_type = RecordType::kString;
-	_val = std::move(source);
+	_val = std::make_shared<std::string>(std::move(source));
 }
 
 Record& Record::operator=(std::string rhs) {
@@ -27,7 +30,7 @@ Record& Record::operator=(std::string rhs) {
 		throw RecordException(Format("cannot assign string to record of type %s", RecordTypeStr(_type)));
 	}
 	_type = RecordType::kString;
-	_val = std::move(rhs);
+	_val = std::make_shared<std::string>(std::move(rhs));
 
 	return *this;
 }
@@ -44,9 +47,9 @@ Record& Record::operator=(Record&& rhs) {
 	_arrayChildren = std::move(rhs._arrayChildren);
 	_val = std::move(rhs._val);
 
-	rhs._assocChildren.clear();
-	rhs._arrayChildren.clear();
-	rhs._val.clear();
+	rhs._assocChildren = nullptr;
+	rhs._arrayChildren = nullptr;
+	rhs._val = nullptr;
 
 	return *this;
 }
@@ -56,14 +59,14 @@ Record& Record::getChild(const std::string& key) {
 		throw RecordException(Format("cannot access keys of children for records of type %s", RecordTypeStr(_type)));
 	}
 
-	if (_type == RecordType::kAssocArray) {
-		auto it = _assocChildren.find(key);
-		if (it != _assocChildren.end()) {
+	if (_type == RecordType::kAssocArray && _assocChildren) {
+		auto it = _assocChildren->find(key);
+		if (it != _assocChildren->end()) {
 			return it->second;
 		}
-	} else if (_type == RecordType::kArray) {
+	} else if (_type == RecordType::kArray && _arrayChildren) {
 		try {
-			return _arrayChildren.at(std::stoll(key));
+			return _arrayChildren->at(std::stoll(key));
 		} catch (...) {}
 	}
 
@@ -76,14 +79,15 @@ Record& Record::operator[](const std::string& key) {
 			throw RecordException(Format("cannot access keys of children for records of type %s", RecordTypeStr(_type)));
 		}
 		_type = RecordType::kAssocArray; // default to creating an assoc array
+		_assocChildren = std::make_shared<std::unordered_map<std::string, Record>>();
 	}
 
 	if (_type == RecordType::kAssocArray) {
-		return _assocChildren[key];
+		return (*_assocChildren)[key];
 	}
 	// _type must be RecordType::kArray
 	try {
-		return _arrayChildren.at(std::stoll(key));
+		return _arrayChildren->at(std::stoll(key));
 	} catch (...) {}
 	throw RecordException("array index key out of bounds");
 }
@@ -92,7 +96,7 @@ bool Record::operator==(const std::string& rhs) {
 	if (_type != RecordType::kString) {
 		throw RecordException(Format("cannot compare string to record of type %s", RecordTypeStr(_type)));
 	}
-	return rhs == _val;
+	return _val && rhs == *_val;
 }
 
 void Record::push_back(std::string val) {
@@ -101,16 +105,17 @@ void Record::push_back(std::string val) {
 			throw RecordException(Format("push_back not applicable to records of type %s", RecordTypeStr(_type)));
 		}
 		_type = RecordType::kArray;
+		_arrayChildren = std::make_shared<std::vector<Record>>();
 	}
 
-	_arrayChildren.push_back(std::move(val));
+	_arrayChildren->push_back(std::move(val));
 }
 
 size_t Record::numChildren() const {
 	if (_type == RecordType::kArray) {
-		return _arrayChildren.size();
+		return _arrayChildren->size();
 	} else if (_type == RecordType::kAssocArray) {
-		return _assocChildren.size();
+		return _assocChildren->size();
 	}
 	throw RecordException(Format("numChildren not applicable to records of type %s", RecordTypeStr(_type)));
 }
@@ -120,15 +125,15 @@ void Record::removeChild(const std::string& key) {
 		size_t i = 0;
 		try {
 			i = std::stoll(key);
-			if (i < _arrayChildren.size()) {
-				_arrayChildren.erase(_arrayChildren.begin() + i);
+			if (i < _arrayChildren->size()) {
+				_arrayChildren->erase(_arrayChildren->begin() + i);
 				return;
 			}
 		} catch (...) {}
 	} else if (_type == RecordType::kAssocArray) {
-		auto it = _assocChildren.find(key);
-		if (it != _assocChildren.end()) {
-			_assocChildren.erase(it);
+		auto it = _assocChildren->find(key);
+		if (it != _assocChildren->end()) {
+			_assocChildren->erase(it);
 			return;
 		}
 	}
@@ -141,13 +146,17 @@ void Record::removeAllChildren() {
 		throw RecordException(Format("cannot remove children in record of type %s", RecordTypeStr(_type)));
 	}
 
-	_assocChildren.clear();
-	_arrayChildren.clear();
+	if (_assocChildren) {
+		_assocChildren->clear();
+	}
+	if (_arrayChildren) {
+		_arrayChildren->clear();
+	}
 }
 
 const std::string& Record::getVal() {
 	if (_type != RecordType::kString) {
 		throw RecordException(Format("getVal not applicable to records of type %s", RecordTypeStr(_type)));
 	}
-	return _val;
+	return *_val;
 }

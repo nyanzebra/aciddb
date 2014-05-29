@@ -1,14 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <unordered_map>
-#include <string>
-#include <exception>
-
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/vector.hpp>
-
 enum class RecordType : uint8_t {
 	kUndefined	= 0x0,
 	kAssocArray	= 0x1,
@@ -17,13 +8,11 @@ enum class RecordType : uint8_t {
 };
 
 inline constexpr const char* RecordTypeStr(RecordType type) {
-	switch(type) {
-		case RecordType::kAssocArray:	return "associative array";
-		case RecordType::kArray:		return "array";
-		case RecordType::kString:		return "string";
-		case RecordType::kUndefined:	return "undefined";
-	}
-	return "";
+	return type == RecordType::kAssocArray ? "associative array" :
+		   type == RecordType::kArray ? "array" :
+		   type == RecordType::kString ? "string" :
+		   type == RecordType::kUndefined ? "undefined" :
+		   "";
 }
 
 class RecordException : public std::runtime_error {
@@ -67,9 +56,10 @@ public:
 
 private:
 	RecordType _type = RecordType::kUndefined;
-	std::unordered_map<std::string, Record> _assocChildren;
-	std::vector<Record> _arrayChildren;
-	std::string _val;
+	// TODO: use unique_ptr
+	std::shared_ptr<std::unordered_map<std::string, Record>> _assocChildren;
+	std::shared_ptr<std::vector<Record>> _arrayChildren;
+	std::shared_ptr<std::string> _val;
 
 	friend class boost::serialization::access;
 
@@ -81,15 +71,24 @@ private:
 		switch (_type) {
 			case RecordType::kUndefined: break;
 			case RecordType::kAssocArray: {
-				ar & _assocChildren;
+				if (!_assocChildren) {
+					_assocChildren = std::make_shared<std::unordered_map<std::string, Record>>();
+				}
+				ar & *_assocChildren;
 				break;
 			}
 			case RecordType::kArray: {
-				ar & _arrayChildren;
+				if (!_arrayChildren) {
+					_arrayChildren = std::make_shared<std::vector<Record>>();
+				}
+				ar & *_arrayChildren;
 				break;
 			}
 			case RecordType::kString: {
-				ar & _val;
+				if (!_val) {
+					_val = std::make_shared<std::string>();
+				}
+				ar & *_val;
 				break;
 			}
 		}

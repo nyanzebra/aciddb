@@ -1,9 +1,5 @@
 #pragma once
-
-#include <iostream>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-
+#include "Datastore.h"
 #include "RecordEvent.h"
 
 class Datastore;

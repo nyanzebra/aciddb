@@ -1,5 +1,6 @@
-#include <cassert>
-
+#ifndef SERVER_PCH_H
+#include "pch.h"
+#endif
 #include "RecordEvent.h"
 #include "Datastore.h"
 
@@ -22,7 +23,7 @@ std::string RecordEvent::operator()(Datastore* ds) const {
 
 			const std::string& key = _args[0];
 			const std::string& data = _args[1];
-			
+
 			auto r = ds->createPath(key.c_str());
 
 			if (!r) { return INVALID_PATH_STRING; }
@@ -49,7 +50,7 @@ std::string RecordEvent::operator()(Datastore* ds) const {
 			Record temp(std::move(*fromRecord));
 
 			ds->removeRecord(key.c_str());
-			
+
 			auto targetRecord = ds->createPath(target.c_str());
 			*targetRecord = std::move(temp);
 
@@ -59,10 +60,11 @@ std::string RecordEvent::operator()(Datastore* ds) const {
 			if (_args.size() != 1) { return INTERNAL_ERROR_STRING; }
 
 			const std::string& key = _args[0];
-			
+
 			ds->removeRecord(key.c_str());
 
 			return OK_STRING;
 		}
 	}
+	return "";
 }

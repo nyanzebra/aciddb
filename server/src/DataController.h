@@ -1,13 +1,6 @@
 #pragma once
-
-#include <iostream>
-#include <unordered_map>
-
-#include "../../shared/src/Transaction.h"
-
 #include "Datastore.h"
 #include "Journal.h"
-#include "RecordEvent.H"
 
 class DataController {
 public:

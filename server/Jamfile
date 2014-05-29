@@ -1,4 +1,13 @@
-lib server-lib : [ glob src/*.cpp : src/main.cpp ] ../shared//shared : <link>static ;
+lib server-lib : pch [ glob src/*.cpp : src/main.cpp ] ../shared//shared : <link>static ;
+
+import pch ;
+cpp-pch pch : src/pch.h :
+	<toolset>darwin:<cxxflags>"-std=c++1y -fcolor-diagnostics"
+	<toolset>gcc:<cxxflags>"-std=c++1y"
+	<include>../deps/include
+: :
+	<include>../deps/include
+;
 
 exe server : server-lib src/main.cpp ../shared//shared ;
 

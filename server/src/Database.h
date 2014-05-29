@@ -1,19 +1,6 @@
 #pragma once
-
-#include <fstream>
-#include <vector>
-#include <memory>
-#include <thread>
-#include <mutex>
-#include <deque>
-#include <condition_variable>
-#include <boost/asio.hpp>
-#include <future>
-
-#include "../../shared/src/Transaction.h"
-
-#include "DataController.h"
 #include "ClientConnection.h"
+#include "DataController.h"
 
 class Database {
 public:
@@ -46,9 +33,9 @@ private:
 	std::fstream _dsFile;
 	std::fstream _jFile;
 	DataController _dataController;
-	
+
 	typedef std::vector<std::pair<Transaction, std::promise<Result>>> TransactionQueue;
-	
+
 	TransactionQueue _transactionQueue;
 	std::mutex _transactionsMutex;
 
