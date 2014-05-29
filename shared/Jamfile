@@ -4,6 +4,8 @@ lib boost-system : : <file>../deps/lib/libboost_system.a <link>static ;
 lib boost-date-time : : <file>../deps/lib/libboost_date_time.a <link>static ;
 lib boost-program-options : : <file>../deps/lib/libboost_program_options.a <link>static ;
 
+lib dl ;
+
 lib shared : [ glob src/*.cpp ] :
 	<link>static
 	<toolset>darwin:<cxxflags>"-std=c++1y -fcolor-diagnostics"
@@ -18,4 +20,6 @@ lib shared : [ glob src/*.cpp ] :
 	<library>boost-system
 	<library>boost-date-time
 	<library>boost-program-options
+	<target-os>linux:<cxxflags>"-pthread"
+	<target-os>linux:<library>dl
 ;
