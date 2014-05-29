@@ -20,6 +20,6 @@ lib shared : [ glob src/*.cpp ] :
 	<library>boost-system
 	<library>boost-date-time
 	<library>boost-program-options
-	<target-os>linux:<cxxflags>"-pthread"
 	<target-os>linux:<library>dl
+	<target-os>linux:<linkflags>"-pthread"
 ;
