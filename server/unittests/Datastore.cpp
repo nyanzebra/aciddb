@@ -1,6 +1,6 @@
-#include <testing.h>
-#include <iostream>
-#include <sstream>
+#ifndef SERVER_PCH_H
+#include "../src/pch.h"
+#endif
 
 #include "../src/Datastore.h"
 #include "../src/Record.h"

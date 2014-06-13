@@ -1,12 +1,9 @@
-#include <testing.h>
-
-#include <sstream>
+#ifndef SERVER_PCH_H
+#include "../src/pch.h"
+#endif
 
 #include "../src/RecordEvent.h"
 #include "../src/Datastore.h"
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 TEST_SUITE("RecordEvents") {
 
@@ -82,7 +79,7 @@ TEST_SUITE("RecordEvents") {
 
 		{
 			RecordEvent e(RecordEventType::kDelete, ""); // invalid key
-			CHECK(e(&ds) == OK_STRING);
+			CHECK(e(&ds) == NOT_FOUND_STRING);
 		}
 
 		// data should still exist
@@ -159,6 +156,109 @@ TEST_SUITE("RecordEvents") {
 		CHECK(ds.getValue("child 2:child 5") == "child 5 record");
 	};
 
+	TEST("SetCreate") {
+		Datastore ds;
+
+		{
+			RecordEvent e(RecordEventType::kSetCreate, "root:child", "record 1", "record 2", "record 3");
+			CHECK(e(&ds) == OK_STRING);
+			CHECK(ds.getValue("root:child:0") == "record 1");
+			CHECK(ds.getValue("root:child:1") == "record 2");
+			CHECK(ds.getValue("root:child:2") == "record 3");
+		}
+		{
+			RecordEvent e(RecordEventType::kSetCreate, "", "test");
+			CHECK(e(&ds) == INVALID_PATH_STRING);
+			CHECK(ds.getValue("") != "test");
+		}
+	};
+
+	TEST("SetInfo") {
+		Datastore ds;
+
+		RecordEvent(RecordEventType::kSetCreate, "root:child", "record 1", "record 2", "record 3")(&ds);
+
+		{
+			RecordEvent e(RecordEventType::kSetInfo, "root:child");
+			CHECK(e(&ds) == "Set contains 3 member(s)\n1) record 1\n2) record 2\n3) record 3")
+		}
+	};
+
+	TEST("SetAdd") {
+		Datastore ds;
+
+		RecordEvent(RecordEventType::kSetCreate, "root:child", "record 1", "record 2", "record 3")(&ds);
+		RecordEvent(RecordEventType::kSetAdd, "root:child", "record 4")(&ds);
+
+		{
+			CHECK(ds.getValue("root:child:0") == "record 1");
+			CHECK(ds.getValue("root:child:1") == "record 2");
+			CHECK(ds.getValue("root:child:2") == "record 3");
+			CHECK(ds.getValue("root:child:3") == "record 4");
+		}
+	};
+
+	TEST("SetRemove") {
+		Datastore ds;
+
+		RecordEvent(RecordEventType::kSetCreate, "root:child", "record 1", "record 2", "record 3")(&ds);
+		RecordEvent(RecordEventType::kSetRemove, "root:child", "record 1")(&ds);
+
+		{
+			CHECK(ds.getValue("root:child:0") == "record 2");
+		}
+	};
+
+	TEST("SetUnion") {
+		Datastore ds;
+
+		RecordEvent(RecordEventType::kSetCreate, "set1", "record 1", "record 2")(&ds);
+		RecordEvent(RecordEventType::kSetCreate, "set2", "record 2", "record 3")(&ds);
+		RecordEvent(RecordEventType::kSetUnion, "set1", "set2", "set3")(&ds);
+		
+		{
+			CHECK(ds.getValue("set3:0") == "record 1");
+			CHECK(ds.getValue("set3:1") == "record 2");
+			CHECK(ds.getValue("set3:2") == "record 3");
+			std::cout<<ds.getValue("set3:2")<<std::endl;
+		}
+	};
+
+	TEST("SetInter") {
+		Datastore ds;
+
+		RecordEvent(RecordEventType::kSetCreate, "set1", "record 1", "record 2")(&ds);
+		RecordEvent(RecordEventType::kSetCreate, "set2", "record 2", "record 3")(&ds);
+		RecordEvent (RecordEventType::kSetInter, "set1", "set2", "set3")(&ds);
+
+		{
+			CHECK(ds.getValue("set3:0") == "record 2");
+		}
+	};
+
+	TEST("SetMember") {
+		Datastore ds;
+
+		RecordEvent(RecordEventType::kSetCreate, "root:child", "record 1", "record 2", "record 3")(&ds);
+
+		{
+			RecordEvent e(RecordEventType::kSetMember, "root:child", "record 1");
+			CHECK(e(&ds) == "true");
+		}
+	};
+
+	TEST("Leaves") {
+		Datastore ds;
+
+		RecordEvent(RecordEventType::kSet, "root:child1", "key1")(&ds);
+		RecordEvent(RecordEventType::kSet, "root:child2", "key2")(&ds);
+
+		{
+			RecordEvent e(RecordEventType::kLeaves, "root");
+			CHECK(e(&ds) == "2");
+		}
+	};
+
 	TEST("Edge Cases") {
 
 		Datastore ds;
@@ -191,7 +291,6 @@ TEST_SUITE("RecordEvents") {
 		CHECK(ds.getRecord("root:temp:child1"));
 
 		CHECK(ds.getRecord("root:temp:child1")->getType() == RecordType::kString);
-
 	};
 
 	TEST("Serialization") {

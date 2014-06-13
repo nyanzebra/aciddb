@@ -1,5 +1,6 @@
-#include <testing.h>
-#include <sstream>
+#ifndef SERVER_PCH_H
+#include "../src/pch.h"
+#endif
 
 #include "../src/Journal.h"
 #include "../src/RecordEvent.h"

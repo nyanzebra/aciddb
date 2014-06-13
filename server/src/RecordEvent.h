@@ -1,12 +1,6 @@
 #pragma once
 
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/level.hpp>
-#include <boost/serialization/tracking.hpp>
-#include <boost/serialization/vector.hpp>
-
-#include <string>
-#include <vector>
+#include "Record.h"
 
 #define ERROR_STRING          "ERROR"
 #define INTERNAL_ERROR_STRING "INTERNAL ERROR"
@@ -22,6 +16,14 @@ enum class RecordEventType : uint8_t {
 	kSet       = 0x2,
 	kMove      = 0x3,
 	kDelete    = 0x4,
+	kSetCreate = 0x5,
+	kSetInfo   = 0x7,
+	kSetAdd    = 0x8,
+	kSetRemove = 0x9,
+	kSetUnion  = 0xA,
+	kSetInter  = 0xB,
+	kSetMember = 0xC,
+	kLeaves    = 0xD
 };
 
 class RecordEvent {

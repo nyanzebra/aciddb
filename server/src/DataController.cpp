@@ -62,6 +62,22 @@ Result DataController::processTransaction(const Transaction& transaction) {
 			events.emplace_back(RecordEventType::kMove, std::move(args));
 		} else if (command == "delete") {
 			events.emplace_back(RecordEventType::kDelete, std::move(args));
+		} else if (command == "setcreate") {
+			events.emplace_back(RecordEventType::kSetCreate, std::move(args));
+		} else if (command == "setinfo") {
+			events.emplace_back(RecordEventType::kSetInfo, std::move(args));
+		} else if (command == "setadd") {
+			events.emplace_back(RecordEventType::kSetAdd, std::move(args));
+		} else if (command == "setremove") {
+			events.emplace_back(RecordEventType::kSetRemove, std::move(args));
+		} else if (command == "setunion") {
+			events.emplace_back(RecordEventType::kSetUnion, std::move(args));
+		} else if (command == "setinter") {
+			events.emplace_back(RecordEventType::kSetInter, std::move(args));
+		} else if (command == "setmember") {
+			events.emplace_back(RecordEventType::kSetMember, std::move(args));
+		} else if (command == "leaves") {
+			events.emplace_back(RecordEventType::kLeaves, std::move(args));
 		}
 	}
 
@@ -83,5 +99,13 @@ bool DataController::_validateStatementSyntax(const std::string& command, const 
 	    || (command == "set" && size != 2)
 		|| (command == "move" && size != 2)
 		|| (command == "delete" && size != 1)
+		|| (command == "setcreate" && size < 1)
+		|| (command == "setinfo" && size != 1)
+		|| (command == "setadd" && size != 2)
+		|| (command == "setremove" && size != 2)
+		|| (command == "setunion" && size != 3)
+		|| (command == "setinter" && size != 3)
+		|| (command == "setmember" && size != 2)
+		|| (command == "leaves" && size != 1)
 	);
 }

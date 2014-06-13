@@ -1,11 +1,8 @@
-#include <testing.h>
-#include <sstream>
-#include <iostream>
+#ifndef SERVER_PCH_H
+#include "../src/pch.h"
+#endif
 
 #include "../src/Record.h"
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 TEST_SUITE("Record") {
 
