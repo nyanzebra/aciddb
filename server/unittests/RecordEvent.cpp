@@ -215,12 +215,24 @@ TEST_SUITE("RecordEvents") {
 		RecordEvent(RecordEventType::kSetCreate, "set1", "record 1", "record 2")(&ds);
 		RecordEvent(RecordEventType::kSetCreate, "set2", "record 2", "record 3")(&ds);
 		RecordEvent(RecordEventType::kSetUnion, "set1", "set2", "set3")(&ds);
+
+		RecordEvent(RecordEventType::kSetCreate, "seta", "Robert", "20", "purple")(&ds);
+		RecordEvent(RecordEventType::kSetCreate, "setb", "So Yeon", "23", "purple", "Robert")(&ds);
+		RecordEvent(RecordEventType::kSetUnion, "seta", "setb", "setc")(&ds);
 		
 		{
 			CHECK(ds.getValue("set3:0") == "record 1");
 			CHECK(ds.getValue("set3:1") == "record 2");
 			CHECK(ds.getValue("set3:2") == "record 3");
-			std::cout<<ds.getValue("set3:2")<<std::endl;
+		}
+
+		{
+			CHECK(ds.getValue("setc:0") == "Robert");
+			CHECK(ds.getValue("setc:1") == "20");
+			CHECK(ds.getValue("setc:2") == "purple");
+			CHECK(ds.getValue("setc:3") == "So Yeon");
+			CHECK(ds.getValue("setc:4") == "23");
+			CHECK(ds.getRecord("setc")->numChildren() == 5);
 		}
 	};
 

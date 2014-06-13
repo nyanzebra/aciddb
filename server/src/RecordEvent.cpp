@@ -192,7 +192,7 @@ std::string RecordEvent::operator()(Datastore* ds) const {
 
 			return OK_STRING;
 		}
-		case RecordEventType::kSetUnion : {
+		case RecordEventType::kSetUnion : { //TODO fix union function!!!!!!!!!
 			if (_args.size() != 3) { return INTERNAL_ERROR_STRING; }
 
 			const std::string& keya = _args[0];
@@ -200,7 +200,7 @@ std::string RecordEvent::operator()(Datastore* ds) const {
 			const std::string& keyc = _args[2];
 			const std::string& rks = { RECORD_KEY_SEPARATOR };
 			std::string rval;
-			bool shouldAdd = false;
+			static bool shouldAdd = false;
 
 			auto ra = ds->getRecord(keya.c_str());
 
@@ -212,6 +212,10 @@ std::string RecordEvent::operator()(Datastore* ds) const {
 
 			if(!ds->getRecord(keyb.c_str())) {
 				return "Set Error: " + keyb + " is not a set.";
+			}
+
+			if(ds->getRecord(keyc.c_str())) {
+				ds->removeRecord(keyc.c_str());
 			}
 
 			auto r = ds->createPath(keyc.c_str());
@@ -226,17 +230,18 @@ std::string RecordEvent::operator()(Datastore* ds) const {
 				*rref = rval;
 			}
 
-			for (size_t i = 0; i < ra->numChildren(); i++) {
+			for (size_t i = 0; i < rb->numChildren(); i++) {
 				shouldAdd = true;
 
-				for (size_t j = 0; j < rb->numChildren(); j++){
-					if(ds->getValue(keya.c_str() + rks + std::to_string(i)) == ds->getValue(keyb.c_str() + rks + std::to_string(j))) {
+				rval = ds->getValue(keyb.c_str() + rks + std::to_string(i));
+
+				for (size_t j = 0; j < ra->numChildren(); j++){
+					if(ds->getValue(keya.c_str() + rks + std::to_string(j)) == rval) {
 						shouldAdd = false;
 						break;
 					}
-					rval = ds->getValue(keyb.c_str() + rks + std::to_string(j));
 				}
-
+				
 				if(shouldAdd){
 					auto rref = ds->createPath(keyc.c_str() + rks + std::to_string(counter++));
 
